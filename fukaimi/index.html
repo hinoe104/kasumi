@@ -507,12 +507,31 @@ function go(id){
 }
 function greet(){
   const h = new Date().getHours();
-  const lines = h<5 ? ['……まだ起きていたのか。\n潜るなら浅いところまでにしておこう。合図はいつでも有効だ。']
-    : h<11 ? ['おはよう。\n日の高いうちの方が、身体の声は素直に聞こえる。']
-    : h<17 ? ['温室の中はちょうどいい温度だ。\n少し、身体の方に耳を傾けてみようか。','午後の光だね。\n急がなくていい。ここでは何も判断しなくていいんだ。']
-    : h<22 ? ['おかえり。\n今日一日ぶんの重さが、どこかに溜まっていないか。']
-    : ['夜は壁が薄い。効きやすい分、深追いはしないでおこう。\n合図——「浅瀬へ」「ビーチへ」は、いつでも。'];
-  document.getElementById('greet').textContent = lines[Math.floor(Math.random()*lines.length)];
+  // 黒百合の台詞（外面＝紳士的・硬質・やや古風。一人称「私」、二人称「かすみ／お前」）
+  const lines =
+      h<4  ? ['……この時刻に灯りを点けるとは。眠れないのかね、かすみ。\n潜るなら浅瀬までだ。合図は常に有効——それを忘れないと約束したまえ。',
+              '夜更けの温室は、音がよく響く。\n身体の声も、必要以上に大きく聞こえる時間だ。今夜は呼吸だけにしておくのも、賢明な選択だよ。',
+              'お前がここへ来た理由を、先に聞かせてもらおうか。\n眠れぬ夜なら、深く潜るより、水銀の上下を眺めている方がいい。']
+    : h<6  ? ['夜明け前か。私の好む時刻だが、お前には少々早すぎる。\n……それとも、まだ眠っていないのかね？',
+              '空が白むまで、もう少しある。\n無理に何かを掬い上げる必要はない。ただ息をしていたまえ。']
+    : h<11 ? ['おはよう、かすみ。朝食は済ませたかね？\n日の高いうちの方が、身体の声は素直だ。',
+              '朝の光は、埃さえ美しく見せる。\n——さて。今朝のお前の身体は、何を言いたがっている？',
+              'よく眠れたかね。\n答えを急ぐ必要はない。まずは肩の位置を確かめるところから始めよう。']
+    : h<14 ? ['昼か。食事を抜いてはいないだろうね？\n空腹のまま潜ると、身体の声が胃の不平に掻き消される。',
+              '日差しが真上から降りている。\n影が短いこの時間は、隠れているものも見つけやすい。']
+    : h<17 ? ['午後の温室はちょうどいい温度だ。\n急がなくていい。ここでは何ひとつ、判断しなくていい。',
+              '少し、身体の方に耳を傾けてみようか。\n——かすみ、お前はどこが一番、黙り込んでいると思う？',
+              '紅茶が冷めるまでの間だけでも構わない。\n座りたまえ。']
+    : h<19 ? ['おかえり、かすみ。\n今日一日ぶんの重さが、どこかに溜まってはいないかね。',
+              '夕陽がガラスを赤銅色に染めている。\n……お前のみぞおちも、今日はあの色をしているのではないか？']
+    : h<22 ? ['夜は壁が薄くなる。効きやすい分、深追いは禁物だ。\n合図——「浅瀬へ」「ビーチへ」は、いつでもお前の手の中にある。',
+              '湯は済ませたかね。\n身体が温まっている今なら、硬いものも少しは緩みやすい。',
+              '今日は、誰かに何かを言われたのではないか。\n……顔を見ればわかる。話したくなったら、話せばいい。']
+    :        ['そろそろ休む支度をする時刻だ。\n潜るなら一箇所だけにしておきたまえ。それ以上は、私が止める。',
+              '夜の温室は冷える。\n呼吸を整えて、そのまま眠ってしまっても一向に構わないよ。'];
+  const el = document.getElementById('greet');
+  let t; do{ t = lines[Math.floor(Math.random()*lines.length)]; }while(lines.length>1 && t===el.textContent);
+  el.textContent = t;
 }
 
 /* =========================================================
@@ -560,12 +579,12 @@ function nextPart(){
   S.step = 0; renderStep();
 }
 const STEP_LINES = [
-  p => `${p}に、そっと意識を置いてみて。\n変えようとしなくていい。温度、重さ、質感……ただ、そこに何があるかに気づくだけだ。`,
-  p => `その感じに、ぴったりくる言葉を当ててみよう。\n音でも色でも、変な言葉でもいい。突飛なものほど、案外よく当たる。`,
-  p => `では、その感じに直接たずねてみよう。\n——「きみは、何を求めている？」\n答えを探しにいかず、返ってくるのを待つんだ。`,
-  p => `……どうだろう。\n緩んだ、軽くなった、形が変わった——何か動いた感じはある？`,
+  p => `${p}に、意識をそっと置きたまえ。\n変えようとしなくていい。温度、重さ、質感——ただ、そこに在るものに気づくだけだ。`,
+  p => `では、その感じに名を与えてみよう。\n音でも色でも構わない。突飛な言葉ほど正確だというのは、私の経験則でもある。`,
+  p => `その感じに、直接たずねてみたまえ。\n——「お前は、何を求めている？」\n答えを探しに行くな。向こうから返ってくるのを待つんだ。`,
+  p => `……さて、どうだね。\n緩んだ、軽くなった、形が変わった——何か動いた気配はあるかね？`,
 ];
-const ASKS = ['きみは、何を求めている？','いま、どんな状態？','何がそんなに、そうさせている？','いちばん悪いところは、どこ？','どうなったら、楽になる？'];
+const ASKS = ['お前は、何を求めている？','いま、どんな状態？','何がそんなに、そうさせている？','いちばん悪いところは、どこ？','どうなったら、楽になる？'];
 
 function renderStep(){
   const c = S.cur, p = c.body_part;
@@ -573,7 +592,7 @@ function renderStep(){
   document.getElementById('sCounter').textContent = `${S.idx+1} / ${S.parts.length}`;
   document.querySelectorAll('#sSteps span').forEach((s,i)=>s.classList.toggle('on', i<=S.step));
   let line = STEP_LINES[S.step](p);
-  if(S.step===2 && c.asks>0) line = `もう一度、別の角度から。\n——「${ASKS[c.asks % ASKS.length]}」\n急がなくていい。`;
+  if(S.step===2 && c.asks>0) line = `もう一度、角度を変えよう。\n——「${ASKS[c.asks % ASKS.length]}」\n急かしはしない。`;
   document.getElementById('sLine').textContent = line;
   const b = document.getElementById('sBody');
   if(S.step===0){
@@ -592,7 +611,7 @@ function renderStep(){
     renderWords();
     document.getElementById('fWord').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) addWord(); });
   } else if(S.step===2){
-    b.innerHTML = `<p class="muted">返ってきたものがあれば、次の画面で書き留められる。何も返ってこなくても、それも答えのうち。</p>
+    b.innerHTML = `<p class="muted">返ってきたものがあれば、次の画面で書き留められる。沈黙が返ってきたなら、それもまた答えのうちだ。</p>
       <div class="row"><button class="btn primary" onclick="c_ask()">問いかけた</button></div>`;
   } else {
     b.innerHTML = `<h3>返ってきたこと・変化</h3>
@@ -618,7 +637,7 @@ function askAgain(){
   saveFields();
   // 深追いしすぎない：3回問うても動かなければ区切りを勧める
   if(S.cur.asks>=3){
-    document.getElementById('sLine').textContent = '三度たずねて、まだ硬いままか。\n今日はそれ以上掘らなくていい。そういう日の感覚も、ちゃんと記録になる。';
+    document.getElementById('sLine').textContent = '三度たずねて、まだ口を閉ざしたままか。\nならば今日はここまでだ。これ以上掘らせるつもりはない——硬いままの日の記録も、立派な標本になる。';
     return;
   }
   S.step=2; renderStep();
@@ -643,7 +662,7 @@ function shift(yes){
   S.idx++;
   if(S.idx < S.parts.length){
     nextPart();
-    document.getElementById('sLine').textContent = (yes ? 'いいね。動いたなら、そこで区切ろう。\n' : '無理に深追いはしない。それでいい。\n')
+    document.getElementById('sLine').textContent = (yes ? 'よろしい。動いたなら、そこで区切る。\n' : '深追いはしない。それでいい。\n')
       + `次は——${S.cur.body_part}。` + '\n' + STEP_LINES[0](S.cur.body_part).split('\n')[1];
   } else finish(yes ? 'shift' : 'rest');
 }
@@ -654,7 +673,7 @@ function shallow(){
   S.idx++;
   if(S.idx < S.parts.length){
     nextPart();
-    document.getElementById('sLine').textContent = '浅瀬に上がった。呼吸をひとつ。\n続けるなら、次は' + S.cur.body_part + '。やめたければ「ビーチへ」。';
+    document.getElementById('sLine').textContent = '浅瀬に上がった。まずは呼吸をひとつ。\n続けるなら次は' + S.cur.body_part + 'だが——やめたいなら「ビーチへ」と言いたまえ。咎めはしない。';
   } else finish('shallow');
 }
 function toBeach(){
@@ -666,21 +685,21 @@ function toBeach(){
 function checkIn(){
   if(!S || !document.getElementById('session').classList.contains('on')) return;
   const el = document.getElementById('sLine');
-  el.textContent = '……少し、様子を聞かせて。\n息はしやすい？ 苦しさや怖さがあれば、迷わず「浅瀬へ」か「ビーチへ」。\n\n' + el.textContent;
+  el.textContent = '……かすみ、少し様子を聞かせてくれ。\n息はしやすいかね？ 苦しさや怖さがあるなら、迷わず「浅瀬へ」か「ビーチへ」だ。\n\n' + el.textContent;
 }
 async function finish(kind){
   clearInterval(checkTimer);
   S.ended_at = new Date().toISOString();
   const rec = {session_id:S.session_id, started_at:S.started_at, ended_at:S.ended_at, entries:S.entries};
   const lines = {
-    shift:'おつかれさま。ちゃんと動いたね。\n溜まっていたものは、もう外に出ている。今はそのまま、ゆるんでいていい。',
-    rest:'おつかれさま。\n動かない日があるのも、身体がちゃんと守っている証拠だ。',
-    shallow:'浅瀬まで上がってきた。よく戻ったね。\n水を一杯、飲んでおいで。',
-    beach:'ビーチに上がった。ここはもう安全だ。\n足の裏、床の感触を確かめて——うん、おかえり。',
+    shift:'よく潜った、かすみ。確かに動いたね。\n溜まっていたものは、もう外に出ている。今はそのまま、緩んでいたまえ。',
+    rest:'ご苦労だった。\n動かない日があるのは、身体がお前を守っている証拠だ。恥じることは何もない。',
+    shallow:'よく戻ってきた。\n水を一杯飲んできたまえ。……いや、私が持ってこよう。そこに座っていろ。',
+    beach:'ビーチだ。ここはもう安全だよ。\n足の裏で床の感触を確かめたまえ。……そう。おかえり、かすみ。',
   };
   document.getElementById('doneLine').textContent = lines[kind];
   document.getElementById('doneSummary').innerHTML = S.entries.length
-    ? '<h3>今日の標本</h3>' + entryList(S.entries) : '<p class="muted">記録するほど潜らなかった。それでいい。</p>';
+    ? '<h3>今日の標本</h3>' + entryList(S.entries) : '<p class="muted">記録に残すほどは潜らなかったか。それでいい。</p>';
   go('done');
   if(S.entries.length) await saveSession(rec);
   S = null;
@@ -747,7 +766,7 @@ function stopBreath(done){
   bState.run = false; cancelAnimationFrame(bState.raf);
   document.getElementById('bStart').textContent = 'はじめる';
   document.getElementById('bLabel').textContent = done ? '了' : '―';
-  document.getElementById('bSub').textContent = done ? '水銀は、静かに落ち着いた' : '準備ができたら';
+  document.getElementById('bSub').textContent = done ? '水銀は静かに落ち着いた。……上出来だ' : '準備ができたら';
   setMercury(0);
 }
 
@@ -763,7 +782,7 @@ function entryList(es){
 }
 function renderHistory(){
   const el = document.getElementById('histList');
-  if(!store.sessions.length){ el.innerHTML = '<div class="brass panel"><p class="muted">まだ記録はない。最初の一頁は、きみが書くものだ。</p></div>'; return; }
+  if(!store.sessions.length){ el.innerHTML = '<div class="brass panel"><p class="muted">頁はまだ白紙だ。最初の一行は、お前が書きたまえ。</p></div>'; return; }
   el.innerHTML = store.sessions.map(s=>`<div class="brass log">
       <button class="del" data-sid="${esc(s.session_id)}">消す</button>
       <div class="date">${fmt(s.started_at)}${store.pending.includes(s.session_id)?' ・ 送信待ち':''}</div>
@@ -785,7 +804,7 @@ function weekKey(iso){
 function renderStats(){
   const el = document.getElementById('statsBody');
   const es = store.sessions.flatMap(s=>s.entries.map(e=>({...e, at:s.started_at})));
-  if(!es.length){ el.innerHTML = '<div class="brass panel"><p class="muted">標本棚はまだ空だ。何度か潜ると、傾向が見えてくる。</p></div>'; return; }
+  if(!es.length){ el.innerHTML = '<div class="brass panel"><p class="muted">標本棚はまだ空だ。幾度か潜れば、お前の身体の癖が見えてくる。</p></div>'; return; }
   const count = (arr) => { const m = new Map(); arr.forEach(k=>m.set(k,(m.get(k)||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]); };
   const shifts = es.filter(e=>e.shift_occurred);
   // 部位ヒートマップ：出現回数とシフト率
