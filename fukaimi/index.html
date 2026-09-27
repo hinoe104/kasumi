@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>深海潜り</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --moss:#3e4f43;
+  --moss-deep:#1f2a24;
+  --sage:#8a9a86;
+  --brass:#b09457;
+  --brass-dim:#7d6a3f;
+  --sepia:#d8ccb4;
+  --paper:#e9e1cf;
+  --rose:#b58e8a;
+  --glass:rgba(233,228,214,.10);
+  --ink:#ece4d2;
+  --ink-dim:#b4ab98;
+  --shade:rgba(18,24,21,.78);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--moss-deep);
+  color:var(--ink);
+  font-family:"Shippori Mincho B1","IM Fell English",serif;
+  letter-spacing:.04em;line-height:1.8;
+  overflow:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:var(--ink)}
+
+/* ---------- 背景（黒百合） ---------- */
+.bg{
+  position:fixed;inset:0;z-index:0;
+  background:#1c2420 url("img/kuroyuri_hoozue.webp") center 30%/cover no-repeat;
+  filter:saturate(.72) sepia(.14) contrast(.96);
+  transition:filter 1.2s ease;
+}
+.bg.dim{filter:saturate(.5) sepia(.25) brightness(.42) blur(2px)}
+.grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 50% 40%, transparent 50%, rgba(10,14,12,.65) 100%),
+    linear-gradient(180deg, rgba(20,26,22,0) 55%, rgba(20,26,22,.85) 100%);
+}
+
+/* ---------- 画面 ---------- */
+.screen{
+  position:fixed;inset:0;z-index:2;
+  display:none;flex-direction:column;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));
+  overflow-y:auto;
+}
+.screen.on{display:flex;animation:fade .7s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.wrap{width:100%;max-width:560px;margin:0 auto}
+
+/* ---------- タイトル ---------- */
+#title{justify-content:flex-end;align-items:center;text-align:center;cursor:pointer}
+#title h1{
+  font-weight:800;font-size:clamp(40px,12vw,64px);letter-spacing:.25em;
+  text-shadow:0 2px 18px rgba(0,0,0,.7);
+  margin-bottom:4px;padding-left:.25em;
+}
+#title .en{font-family:"IM Fell English",serif;font-style:italic;color:var(--sepia);letter-spacing:.2em;opacity:.9}
+#title .tap{margin:40px 0 28px;font-size:14px;color:var(--ink-dim);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ---------- 真鍮の枠 ---------- */
+.brass{
+  position:relative;
+  background:linear-gradient(180deg,rgba(38,48,42,.86),rgba(24,31,27,.9));
+  border:1px solid var(--brass-dim);
+  box-shadow:inset 0 0 0 3px rgba(20,26,22,.9), inset 0 0 0 4px rgba(176,148,87,.45), 0 8px 24px rgba(0,0,0,.45);
+  border-radius:3px;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+.brass::before,.brass::after{
+  content:"";position:absolute;width:10px;height:10px;border:1px solid var(--brass);
+  transform:rotate(45deg);background:var(--moss-deep);top:-6px;
+}
+.brass::before{left:14px}.brass::after{right:14px}
+
+/* ---------- メイン ---------- */
+#main{justify-content:flex-end}
+.speech{padding:22px 20px 18px;margin-bottom:14px;min-height:112px}
+.speech .name{
+  position:absolute;top:-14px;left:28px;padding:0 12px;
+  background:var(--moss-deep);border:1px solid var(--brass-dim);
+  font-size:13px;color:var(--brass);letter-spacing:.2em;
+}
+.speech p{font-size:15px;white-space:pre-wrap}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{
+  padding:14px 10px;text-align:center;font-size:15px;
+  background:linear-gradient(180deg,rgba(62,79,67,.88),rgba(31,42,36,.92));
+  border:1px solid var(--brass-dim);
+  box-shadow:inset 0 1px 0 rgba(216,204,180,.18), inset 0 0 0 3px rgba(20,26,22,.5);
+  border-radius:3px;transition:border-color .2s, background .2s;
+}
+.btn:hover,.btn:focus-visible{border-color:var(--brass);outline:none}
+.btn:active{transform:translateY(1px)}
+.btn small{display:block;font-family:"IM Fell English",serif;font-style:italic;font-size:11px;color:var(--ink-dim);letter-spacing:.12em}
+.btn.primary{border-color:var(--brass);background:linear-gradient(180deg,rgba(125,106,63,.55),rgba(52,48,34,.9))}
+.btn.ghost{background:rgba(20,26,22,.55)}
+.btn:disabled{opacity:.4;cursor:default}
+.menu .wide{grid-column:1/-1}
+.sync{margin-top:10px;font-size:11px;color:var(--ink-dim);text-align:center}
+.sync button{text-decoration:underline;font-size:11px;color:var(--ink-dim)}
+
+/* ---------- 共通ヘッダ ---------- */
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.head h2{font-size:18px;letter-spacing:.2em;font-weight:700}
+.head .back{font-size:13px;color:var(--ink-dim);padding:6px 4px}
+.panel{padding:20px 18px;margin-bottom:14px}
+.panel h3{font-size:14px;color:var(--brass);letter-spacing:.15em;margin-bottom:10px;font-weight:500}
+.lead{font-size:15px;white-space:pre-wrap;margin-bottom:14px}
+.muted{color:var(--ink-dim);font-size:13px}
+
+/* ---------- 部位選択 ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  padding:7px 13px;font-size:14px;border:1px solid rgba(176,148,87,.4);border-radius:999px;
+  background:rgba(20,26,22,.5);transition:all .2s;
+}
+.chip.sel{border-color:var(--brass);background:rgba(125,106,63,.5);color:#fff}
+.addrow{display:flex;gap:8px;margin-top:12px}
+.field{
+  flex:1;min-width:0;padding:10px 12px;background:rgba(233,228,214,.06);
+  border:1px solid rgba(176,148,87,.35);border-radius:2px;outline:none;
+}
+.field:focus{border-color:var(--brass)}
+textarea.field{width:100%;min-height:80px;resize:vertical}
+
+/* ---------- 進行 ---------- */
+.steps{display:flex;gap:4px;margin-bottom:12px}
+.steps span{flex:1;height:3px;background:rgba(176,148,87,.2)}
+.steps span.on{background:var(--brass)}
+.partname{font-size:22px;font-weight:700;letter-spacing:.12em;margin-bottom:4px}
+.counter{font-size:12px;color:var(--ink-dim);font-family:"IM Fell English",serif;font-style:italic}
+.row{display:flex;gap:10px;margin-top:14px}
+.row .btn{flex:1}
+.safety{display:flex;gap:8px;justify-content:center;margin-top:auto;padding-top:10px}
+.safety button{
+  font-size:12px;padding:6px 12px;border:1px solid rgba(181,142,138,.5);border-radius:999px;
+  color:var(--rose);background:rgba(20,26,22,.6);
+}
+.words{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.words .chip{font-size:13px;padding:4px 10px}
+.hint{font-size:12px;color:var(--ink-dim);margin-top:8px}
+
+/* ---------- 呼吸（水銀柱） ---------- */
+.thermo-wrap{display:flex;gap:18px;align-items:center;justify-content:center;padding:6px 0}
+.thermo svg{display:block;height:min(52vh,380px);width:auto}
+#mercury{transition:none}
+.breath-label{font-size:26px;letter-spacing:.3em;min-width:5em;text-align:center}
+.breath-sub{font-size:12px;color:var(--ink-dim);text-align:center}
+.seg{display:flex;border:1px solid var(--brass-dim);border-radius:2px;overflow:hidden}
+.seg button{flex:1;padding:8px 4px;font-size:13px}
+.seg button.on{background:rgba(125,106,63,.55)}
+
+/* ---------- 履歴 ---------- */
+.log{padding:14px 16px;margin-bottom:10px}
+.log .date{font-size:12px;color:var(--ink-dim);font-family:"IM Fell English",serif}
+.log ul{list-style:none;margin-top:6px}
+.log li{font-size:14px;padding:4px 0;border-top:1px dashed rgba(176,148,87,.2)}
+.log li:first-child{border-top:0}
+.shift{color:var(--brass)}
+.noshift{color:var(--ink-dim)}
+.log .del{float:right;font-size:11px;color:var(--ink-dim)}
+
+/* ---------- 分析 ---------- */
+.bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.bar .lbl{width:6.5em;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .track{flex:1;height:10px;background:rgba(176,148,87,.12);position:relative}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--brass-dim),var(--brass))}
+.bar .fill.rose{background:linear-gradient(90deg,#7e5f5c,var(--rose))}
+.bar .n{width:2.5em;text-align:right;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+.heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.heat div{padding:10px 6px;text-align:center;font-size:12px;border:1px solid rgba(176,148,87,.25)}
+.heat b{display:block;font-size:18px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--brass);font-weight:700}
+.stat span{font-size:11px;color:var(--ink-dim)}
+
+/* ---------- ダイアログ ---------- */
+.modal{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;background:rgba(10,14,12,.7);padding:16px}
+.modal.on{display:flex}
+.modal .panel{max-width:420px;width:100%}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"></div>
+<div class="grain"></div>
+
+<!-- タイトル -->
+<section class="screen on" id="title" onclick="go('main')">
+  <h1>深海潜り</h1>
+  <div class="en">— a conservatory of quiet senses —</div>
+  <div class="tap">画面に触れて、はじめる</div>
+</section>
+
+<!-- メイン -->
+<section class="screen" id="main">
+  <div class="wrap">
+    <div class="brass speech"><span class="name">黒百合</span><p id="greet"></p></div>
+    <div class="menu">
+      <button class="btn primary wide" onclick="startSelect()">感覚をたどる<small>Focusing</small></button>
+      <button class="btn" onclick="go('breath')">呼吸を整える<small>Breathing</small></button>
+      <button class="btn" onclick="renderHistory();go('history')">記録を読む<small>Journal</small></button>
+      <button class="btn wide" onclick="renderStats();go('stats')">標本棚をひらく<small>Herbarium · Analysis</small></button>
+    </div>
+    <div class="sync"><span id="syncState"></span> ・ <button onclick="openSettings()">保存先の設定</button></div>
+  </div>
+</section>
+
+<!-- 部位選択 -->
+<section class="screen" id="select">
+  <div class="wrap">
+    <div class="head"><h2>今日、たどる場所</h2><button class="back" onclick="go('main')">← 戻る</button></div>
+    <div class="brass panel">
+      <p class="lead">気になっている場所を、多くても三つまで。
+順番に、ひとつずつ見ていこう。</p>
+      <div class="chips" id="partChips"></div>
+      <div class="addrow"><input class="field" id="partInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" onclick="addPart()">加える</button></div>
+      <p class="hint" id="selCount"></p>
+    </div>
+    <button class="btn primary" style="width:100%" id="beginBtn" onclick="beginSession()" disabled>潜りはじめる</button>
+  </div>
+</section>
+
+<!-- セッション -->
+<section class="screen" id="session">
+  <div class="wrap" style="display:flex;flex-direction:column;flex:1">
+    <div class="head"><div><div class="partname" id="sPart"></div><div class="counter" id="sCounter"></div></div></div>
+    <div class="steps" id="sSteps"><span></span><span></span><span></span><span></span></div>
+    <div class="brass speech"><span class="name">黒百合</span><p id="sLine"></p></div>
+    <div class="brass panel" id="sBody"></div>
+    <div class="safety">
+      <button onclick="shallow()">浅瀬へ</button>
+      <button onclick="toBeach()">ビーチへ</button>
+    </div>
+  </div>
+</section>
+
+<!-- 終了 -->
+<section class="screen" id="done">
+  <div class="wrap" style="margin-top:auto">
+    <div class="brass speech"><span class="name">黒百合</span><p id="doneLine"></p></div>
+    <div class="brass panel" id="doneSummary"></div>
+    <div class="menu">
+      <button class="btn" onclick="go('breath')">呼吸で締める</button>
+      <button class="btn primary" onclick="go('main')">温室に戻る</button>
+    </div>
+  </div>
+</section>
+
+<!-- 呼吸 -->
+<section class="screen" id="breath">
+  <div class="wrap">
+    <div class="head"><h2>呼吸</h2><button class="back" onclick="stopBreath();go('main')">← 戻る</button></div>
+    <div class="brass panel">
+      <div class="thermo-wrap">
+        <div class="thermo">
+          <svg viewBox="0 0 80 320" aria-label="温度計">
+            <defs>
+              <linearGradient id="glassG" x1="0" x2="1">
+                <stop offset="0" stop-color="#e9e4d6" stop-opacity=".10"/>
+                <stop offset=".35" stop-color="#e9e4d6" stop-opacity=".28"/>
+                <stop offset="1" stop-color="#e9e4d6" stop-opacity=".06"/>
+              </linearGradient>
+              <linearGradient id="hgG" x1="0" x2="1">
+                <stop offset="0" stop-color="#7a8a8e"/><stop offset=".45" stop-color="#e2e6e4"/><stop offset="1" stop-color="#6f7b7d"/>
+              </linearGradient>
+            </defs>
+            <!-- 真鍮の目盛板 -->
+            <rect x="8" y="6" width="64" height="300" rx="4" fill="#2a2a1f" stroke="#7d6a3f"/>
+            <g stroke="#b09457" stroke-width="1" id="ticks"></g>
+            <!-- ガラス管 -->
+            <rect x="33" y="22" width="14" height="238" rx="7" fill="url(#glassG)" stroke="#d8ccb4" stroke-opacity=".5"/>
+            <!-- 水銀 -->
+            <rect id="mercury" x="37" y="250" width="6" height="20" rx="3" fill="url(#hgG)"/>
+            <circle cx="40" cy="278" r="15" fill="url(#hgG)" stroke="#d8ccb4" stroke-opacity=".5"/>
+            <circle cx="35" cy="273" r="4" fill="#fff" opacity=".35"/>
+          </svg>
+        </div>
+        <div>
+          <div class="breath-label" id="bLabel">―</div>
+          <div class="breath-sub" id="bSub">準備ができたら</div>
+        </div>
+      </div>
+    </div>
+    <div class="brass panel">
+      <h3>拍子</h3>
+      <div class="seg" id="bPattern">
+        <button data-p="4,0,6,0" class="on">4–6</button>
+        <button data-p="4,4,4,4">箱 4–4–4–4</button>
+        <button data-p="4,7,8,0">4–7–8</button>
+      </div>
+      <div class="row">
+        <div class="seg" id="bLen" style="flex:1">
+          <button data-m="3">3分</button><button data-m="5" class="on">5分</button><button data-m="10">10分</button>
+        </div>
+        <button class="btn ghost" id="bSound" onclick="toggleSound()" style="flex:none;padding:8px 14px">音 あり</button>
+      </div>
+      <button class="btn primary" style="width:100%;margin-top:14px" id="bStart" onclick="toggleBreath()">はじめる</button>
+    </div>
+  </div>
+</section>
+
+<!-- 履歴 -->
+<section class="screen" id="history">
+  <div class="wrap">
+    <div class="head"><h2>記録</h2><button class="back" onclick="go('main')">← 戻る</button></div>
+    <div id="histList"></div>
+  </div>
+</section>
+
+<!-- 分析 -->
+<section class="screen" id="stats">
+  <div class="wrap">
+    <div class="head"><h2>標本棚</h2><button class="back" onclick="go('main')">← 戻る</button></div>
+    <div id="statsBody"></div>
+  </div>
+</section>
+
+<!-- 設定 -->
+<div class="modal" id="settings">
+  <div class="brass panel">
+    <h3>保存先（PocketBase）</h3>
+    <p class="muted" style="margin-bottom:10px">正本は PocketBase の <code>fukaimi_sessions</code>。この端末の記録はキャッシュと送信待ちの控えです。</p>
+    <input class="field" id="pbUrl" style="width:100%" placeholder="http://100.121.46.56:8090">
+    <p class="hint" id="pbTest"></p>
+    <div class="row">
+      <button class="btn ghost" onclick="closeSettings()">閉じる</button>
+      <button class="btn primary" onclick="saveSettings()">保存して同期</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   データ層：正本は PocketBase、localStorage はキャッシュ＋送信待ち
+   ========================================================= */
+const COLL = 'fukaimi_sessions';
+const K = {url:'fukaimi_pb_url', cache:'fukaimi_cache', pending:'fukaimi_pending', sound:'fukaimi_sound'};
+const DEFAULT_URL = 'http://100.121.46.56:8090';
+
+function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v==null ? d : JSON.parse(v); }catch(e){ return d; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+const store = {
+  url: lsGet(K.url, DEFAULT_URL),
+  sessions: lsGet(K.cache, []),      // 表示用キャッシュ
+  pending: lsGet(K.pending, []),     // PocketBase 未送信の session_id
+  online: null,
+};
+function persist(){ lsSet(K.cache, store.sessions); lsSet(K.pending, store.pending); }
+
+async function pb(path, opt={}){
+  const ctl = new AbortController(); const t = setTimeout(()=>ctl.abort(), 6000);
+  try{
+    const r = await fetch(store.url.replace(/\/$/,'') + path, {...opt, signal:ctl.signal,
+      headers:{'Content-Type':'application/json', ...(opt.headers||{})}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.status===204 ? null : r.json();
+  } finally { clearTimeout(t); }
+}
+const q = s => encodeURIComponent(s);
+
+// 送信待ちを流す。session_id で既存確認してから作成＝再送で重複しない
+async function flush(){
+  for(const sid of [...store.pending]){
+    const s = store.sessions.find(x=>x.session_id===sid);
+    if(!s){ store.pending = store.pending.filter(x=>x!==sid); continue; }
+    const body = JSON.stringify({session_id:s.session_id, started_at:s.started_at, ended_at:s.ended_at, entries:s.entries});
+    const found = await pb(`/api/collections/${COLL}/records?perPage=1&filter=${q(`session_id="${sid}"`)}`);
+    if(found.items.length) await pb(`/api/collections/${COLL}/records/${found.items[0].id}`, {method:'PATCH', body});
+    else await pb(`/api/collections/${COLL}/records`, {method:'POST', body});
+    store.pending = store.pending.filter(x=>x!==sid);
+    persist();
+  }
+}
+// 正本を読み直してキャッシュを置き換える（送信待ちはローカル版を残す）
+async function pull(){
+  let page = 1, items = [];
+  while(true){
+    const r = await pb(`/api/collections/${COLL}/records?perPage=200&page=${page}&sort=-started_at`);
+    items = items.concat(r.items);
+    if(page >= r.totalPages) break; page++;
+  }
+  const remote = items.map(x=>({session_id:x.session_id, started_at:x.started_at, ended_at:x.ended_at, entries:x.entries||[], _id:x.id}));
+  const local = store.sessions.filter(s=>store.pending.includes(s.session_id));
+  const ids = new Set(local.map(s=>s.session_id));
+  store.sessions = [...local, ...remote.filter(s=>!ids.has(s.session_id))]
+    .sort((a,b)=>b.started_at.localeCompare(a.started_at));
+  persist();
+}
+async function sync(){
+  try{ await flush(); await pull(); store.online = true; }
+  catch(e){ store.online = false; console.warn('sync', e); }
+  showSync();
+}
+function showSync(){
+  const el = document.getElementById('syncState');
+  const n = store.pending.length;
+  el.textContent = store.online===null ? '同期中…'
+    : store.online ? (n ? `送信待ち ${n}件` : '温室の記録と同期済み')
+    : `保存先に届かず・この端末に控え${n?`（送信待ち ${n}件）`:''}`;
+}
+async function saveSession(s){
+  const i = store.sessions.findIndex(x=>x.session_id===s.session_id);
+  if(i>=0) store.sessions[i] = s; else store.sessions.unshift(s);
+  if(!store.pending.includes(s.session_id)) store.pending.push(s.session_id);
+  persist(); await sync();
+}
+async function deleteSession(sid){
+  if(!confirm('この記録を消しますか？（保存先からも消えます）')) return;
+  const s = store.sessions.find(x=>x.session_id===sid);
+  try{
+    const found = await pb(`/api/collections/${COLL}/records?perPage=1&filter=${q(`session_id="${sid}"`)}`);
+    if(found.items.length) await pb(`/api/collections/${COLL}/records/${found.items[0].id}`, {method:'DELETE'});
+  }catch(e){
+    if(!store.pending.includes(sid)){ alert('保存先に届かないため、今は消せません。'); return; }
+  }
+  store.sessions = store.sessions.filter(x=>x!==s);
+  store.pending = store.pending.filter(x=>x!==sid);
+  persist(); renderHistory();
+}
+
+/* ---------- 設定 ---------- */
+function openSettings(){ document.getElementById('pbUrl').value = store.url; document.getElementById('pbTest').textContent=''; document.getElementById('settings').classList.add('on'); }
+function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
+async function saveSettings(){
+  store.url = document.getElementById('pbUrl').value.trim() || DEFAULT_URL; lsSet(K.url, store.url);
+  const t = document.getElementById('pbTest'); t.textContent = '確かめています…';
+  await sync();
+  t.textContent = store.online ? '届きました。' :
+    (location.protocol==='https:' && store.url.startsWith('http:')
+      ? 'https のページから http の保存先へは、ブラウザが通しません。http で開くか、保存先を https にしてください。'
+      : '届きませんでした。Tailscale の接続とコレクションの権限を確かめてください。');
+}
+
+/* =========================================================
+   画面遷移
+   ========================================================= */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
+  document.getElementById('bg').classList.toggle('dim', !['title','main','done'].includes(id));
+  if(id==='main') greet();
+}
+function greet(){
+  const h = new Date().getHours();
+  const lines = h<5 ? ['……まだ起きていたのか。\n潜るなら浅いところまでにしておこう。合図はいつでも有効だ。']
+    : h<11 ? ['おはよう。\n日の高いうちの方が、身体の声は素直に聞こえる。']
+    : h<17 ? ['温室の中はちょうどいい温度だ。\n少し、身体の方に耳を傾けてみようか。','午後の光だね。\n急がなくていい。ここでは何も判断しなくていいんだ。']
+    : h<22 ? ['おかえり。\n今日一日ぶんの重さが、どこかに溜まっていないか。']
+    : ['夜は壁が薄い。効きやすい分、深追いはしないでおこう。\n合図——「浅瀬へ」「ビーチへ」は、いつでも。'];
+  document.getElementById('greet').textContent = lines[Math.floor(Math.random()*lines.length)];
+}
+
+/* =========================================================
+   感覚トラッキング
+   ========================================================= */
+const PARTS = ['みぞおち','喉','胸','お腹','首','肩','背中','後頭部','額','顎','脇','腰','手','脚'];
+let selected = [];
+function startSelect(){
+  selected = []; document.getElementById('partInput').value=''; renderChips(); go('select');
+}
+function renderChips(){
+  const all = [...new Set([...PARTS, ...selected])];
+  document.getElementById('partChips').innerHTML = all.map(p=>
+    `<button class="chip ${selected.includes(p)?'sel':''}" data-p="${esc(p)}">${esc(p)}</button>`).join('');
+  document.querySelectorAll('#partChips .chip').forEach(b=>b.onclick=()=>togglePart(b.dataset.p));
+  document.getElementById('selCount').textContent = selected.length
+    ? `選んだ順：${selected.join(' → ')}（${selected.length}/3）` : 'まだ選んでいません';
+  document.getElementById('beginBtn').disabled = !selected.length;
+}
+function togglePart(p){
+  if(selected.includes(p)) selected = selected.filter(x=>x!==p);
+  else if(selected.length<3) selected.push(p);
+  renderChips();
+}
+function addPart(){
+  const el = document.getElementById('partInput'); const v = el.value.trim();
+  if(v && !selected.includes(v) && selected.length<3){ selected.push(v); el.value=''; }
+  renderChips();
+}
+document.getElementById('partInput').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) addPart(); });
+
+let S = null;           // 進行中セッション
+let checkTimer = null;  // 5分おきの様子うかがい
+const CHECK_MS = 5*60*1000;
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function beginSession(){
+  S = {session_id:uid(), started_at:new Date().toISOString(), ended_at:null, entries:[], parts:[...selected], idx:0, step:0, cur:null};
+  clearInterval(checkTimer); checkTimer = setInterval(checkIn, CHECK_MS);
+  nextPart(); go('session');
+}
+function nextPart(){
+  const p = S.parts[S.idx];
+  S.cur = {body_part:p, sensation_words:[], color:'', shift_occurred:false, note:'', asks:0, noticed:''};
+  S.step = 0; renderStep();
+}
+const STEP_LINES = [
+  p => `${p}に、そっと意識を置いてみて。\n変えようとしなくていい。温度、重さ、質感……ただ、そこに何があるかに気づくだけだ。`,
+  p => `その感じに、ぴったりくる言葉を当ててみよう。\n音でも色でも、変な言葉でもいい。突飛なものほど、案外よく当たる。`,
+  p => `では、その感じに直接たずねてみよう。\n——「きみは、何を求めている？」\n答えを探しにいかず、返ってくるのを待つんだ。`,
+  p => `……どうだろう。\n緩んだ、軽くなった、形が変わった——何か動いた感じはある？`,
+];
+const ASKS = ['きみは、何を求めている？','いま、どんな状態？','何がそんなに、そうさせている？','いちばん悪いところは、どこ？','どうなったら、楽になる？'];
+
+function renderStep(){
+  const c = S.cur, p = c.body_part;
+  document.getElementById('sPart').textContent = p;
+  document.getElementById('sCounter').textContent = `${S.idx+1} / ${S.parts.length}`;
+  document.querySelectorAll('#sSteps span').forEach((s,i)=>s.classList.toggle('on', i<=S.step));
+  let line = STEP_LINES[S.step](p);
+  if(S.step===2 && c.asks>0) line = `もう一度、別の角度から。\n——「${ASKS[c.asks % ASKS.length]}」\n急がなくていい。`;
+  document.getElementById('sLine').textContent = line;
+  const b = document.getElementById('sBody');
+  if(S.step===0){
+    b.innerHTML = `<h3>気づいたこと</h3>
+      <textarea class="field" id="fNotice" placeholder="例：ゲル状で、弾力がない。少し冷たい">${esc(c.noticed)}</textarea>
+      <p class="hint">書かなくても構わない。感じられたら次へ。</p>
+      <div class="row"><button class="btn primary" onclick="stepNext()">感じられた</button></div>`;
+  } else if(S.step===1){
+    b.innerHTML = `<h3>言葉・擬態語</h3>
+      <div class="addrow" style="margin-top:0"><input class="field" id="fWord" placeholder="例：ぶにぶに" maxlength="30"><button class="btn ghost" onclick="addWord()">当てる</button></div>
+      <div class="words" id="wordList"></div>
+      <h3 style="margin-top:16px">色</h3>
+      <input class="field" id="fColor" style="width:100%" placeholder="例：赤銅色" value="${esc(c.color)}" maxlength="20">
+      <p class="hint">言葉は何度でも言い換えていい。「ぶにぶに」→「ぶにぐち」のように、しっくりくるまで。</p>
+      <div class="row"><button class="btn ghost" onclick="stepBack()">戻る</button><button class="btn primary" onclick="stepNext()">これでいい</button></div>`;
+    renderWords();
+    document.getElementById('fWord').addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) addWord(); });
+  } else if(S.step===2){
+    b.innerHTML = `<p class="muted">返ってきたものがあれば、次の画面で書き留められる。何も返ってこなくても、それも答えのうち。</p>
+      <div class="row"><button class="btn primary" onclick="c_ask()">問いかけた</button></div>`;
+  } else {
+    b.innerHTML = `<h3>返ってきたこと・変化</h3>
+      <textarea class="field" id="fNote" placeholder="例：少し軽くなった。溜まっていたものが出た感じ">${esc(c.note)}</textarea>
+      <div class="menu" style="margin-top:14px">
+        <button class="btn primary" onclick="shift(true)">動いた（シフト）</button>
+        <button class="btn" onclick="askAgain()">まだ——もう一度問う</button>
+        <button class="btn ghost wide" onclick="shift(false)">今日はここまでにする</button>
+      </div>`;
+  }
+}
+function saveFields(){
+  const c = S.cur; const g = id => document.getElementById(id);
+  if(g('fNotice')) c.noticed = g('fNotice').value.trim();
+  if(g('fColor')) c.color = g('fColor').value.trim();
+  if(g('fNote')) c.note = g('fNote').value.trim();
+  if(g('fWord') && g('fWord').value.trim()) addWord();
+}
+function stepNext(){ saveFields(); S.step++; renderStep(); }
+function stepBack(){ saveFields(); S.step--; renderStep(); }
+function c_ask(){ S.cur.asks++; S.step=3; renderStep(); }
+function askAgain(){
+  saveFields();
+  // 深追いしすぎない：3回問うても動かなければ区切りを勧める
+  if(S.cur.asks>=3){
+    document.getElementById('sLine').textContent = '三度たずねて、まだ硬いままか。\n今日はそれ以上掘らなくていい。そういう日の感覚も、ちゃんと記録になる。';
+    return;
+  }
+  S.step=2; renderStep();
+}
+function addWord(){
+  const el = document.getElementById('fWord'); const v = el.value.trim();
+  if(v){ S.cur.sensation_words.push(v); el.value=''; renderWords(); }
+}
+function renderWords(){
+  const w = S.cur.sensation_words;
+  document.getElementById('wordList').innerHTML = w.map((x,i)=>
+    `${i?'<span class="muted">→</span>':''}<button class="chip sel" onclick="S.cur.sensation_words.splice(${i},1);renderWords()">${esc(x)} ×</button>`).join('');
+}
+function commitEntry(shifted){
+  saveFields();
+  const c = S.cur;
+  S.entries.push({body_part:c.body_part, sensation_words:c.sensation_words, color:c.color,
+    shift_occurred:shifted, note:[c.noticed && `気づき：${c.noticed}`, c.note].filter(Boolean).join('\n'), asks:c.asks});
+}
+function shift(yes){
+  commitEntry(yes);
+  S.idx++;
+  if(S.idx < S.parts.length){
+    nextPart();
+    document.getElementById('sLine').textContent = (yes ? 'いいね。動いたなら、そこで区切ろう。\n' : '無理に深追いはしない。それでいい。\n')
+      + `次は——${S.cur.body_part}。` + '\n' + STEP_LINES[0](S.cur.body_part).split('\n')[1];
+  } else finish(yes ? 'shift' : 'rest');
+}
+function shallow(){
+  // 浅瀬へ：いまの部位を切り上げて、深さを戻す
+  if(!confirm('浅瀬に上がりますか？（いまの部位はここで区切ります）')) return;
+  commitEntry(false);
+  S.idx++;
+  if(S.idx < S.parts.length){
+    nextPart();
+    document.getElementById('sLine').textContent = '浅瀬に上がった。呼吸をひとつ。\n続けるなら、次は' + S.cur.body_part + '。やめたければ「ビーチへ」。';
+  } else finish('shallow');
+}
+function toBeach(){
+  // ビーチへ：即終了。途中でも記録は残す
+  saveFields();
+  if(S.step>0 || S.cur.noticed || S.cur.sensation_words.length) commitEntry(false);
+  finish('beach');
+}
+function checkIn(){
+  if(!S || !document.getElementById('session').classList.contains('on')) return;
+  const el = document.getElementById('sLine');
+  el.textContent = '……少し、様子を聞かせて。\n息はしやすい？ 苦しさや怖さがあれば、迷わず「浅瀬へ」か「ビーチへ」。\n\n' + el.textContent;
+}
+async function finish(kind){
+  clearInterval(checkTimer);
+  S.ended_at = new Date().toISOString();
+  const rec = {session_id:S.session_id, started_at:S.started_at, ended_at:S.ended_at, entries:S.entries};
+  const lines = {
+    shift:'おつかれさま。ちゃんと動いたね。\n溜まっていたものは、もう外に出ている。今はそのまま、ゆるんでいていい。',
+    rest:'おつかれさま。\n動かない日があるのも、身体がちゃんと守っている証拠だ。',
+    shallow:'浅瀬まで上がってきた。よく戻ったね。\n水を一杯、飲んでおいで。',
+    beach:'ビーチに上がった。ここはもう安全だ。\n足の裏、床の感触を確かめて——うん、おかえり。',
+  };
+  document.getElementById('doneLine').textContent = lines[kind];
+  document.getElementById('doneSummary').innerHTML = S.entries.length
+    ? '<h3>今日の標本</h3>' + entryList(S.entries) : '<p class="muted">記録するほど潜らなかった。それでいい。</p>';
+  go('done');
+  if(S.entries.length) await saveSession(rec);
+  S = null;
+}
+
+/* =========================================================
+   呼吸法：水銀柱＋メトロノーム
+   ========================================================= */
+(function drawTicks(){
+  const g = document.getElementById('ticks'); let h='';
+  for(let i=0;i<=20;i++){ const y = 250 - i*11; h += `<line x1="${i%5?22:16}" y1="${y}" x2="30" y2="${y}"/><line x1="50" y1="${y}" x2="${i%5?58:64}" y2="${y}"/>`; }
+  g.innerHTML = h;
+})();
+let bState = {run:false, raf:0, t0:0, pat:[4,0,6,0], min:5, sound:lsGet(K.sound,true)};
+let actx = null;
+const PHASES = [['吸う','ゆっくり'],['止める','そのまま'],['吐く','細く長く'],['止める','空のまま']];
+function segInit(id, cb){
+  document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('on', x===b)); cb(b);
+  });
+}
+segInit('bPattern', b=>bState.pat = b.dataset.p.split(',').map(Number));
+segInit('bLen', b=>bState.min = +b.dataset.m);
+function renderSoundBtn(){ document.getElementById('bSound').textContent = bState.sound ? '音 あり' : '音 なし'; }
+function toggleSound(){ bState.sound = !bState.sound; lsSet(K.sound, bState.sound); renderSoundBtn(); }
+renderSoundBtn();
+function tick(accent){
+  if(!bState.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+    o.type='sine'; o.frequency.value = accent ? 660 : 440;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(accent?.22:.08, t+.005); g.gain.exponentialRampToValueAtTime(.0001, t+(accent?.6:.18));
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+.7);
+  }catch(e){}
+}
+function setMercury(f){ // 0..1
+  const top = 250 - f*220, el = document.getElementById('mercury');
+  el.setAttribute('y', top); el.setAttribute('height', 270-top);
+}
+function toggleBreath(){ bState.run ? stopBreath() : startBreath(); }
+function startBreath(){
+  if(actx && actx.state==='suspended') actx.resume();
+  bState.run = true; bState.t0 = performance.now(); bState.lastSec = -1; bState.lastPhase = -1;
+  document.getElementById('bStart').textContent = 'やめる';
+  const loop = now => {
+    if(!bState.run) return;
+    const el = (now - bState.t0)/1000, total = bState.min*60;
+    if(el >= total){ stopBreath(true); return; }
+    const pat = bState.pat, cyc = pat.reduce((a,b)=>a+b,0);
+    let t = el % cyc, ph = 0;
+    while(t >= pat[ph] ){ t -= pat[ph]; ph = (ph+1)%4; }
+    const f = t/pat[ph], ease = x => (1-Math.cos(Math.PI*x))/2;
+    setMercury(ph===0 ? ease(f) : ph===1 ? 1 : ph===2 ? 1-ease(f) : 0);
+    if(ph !== bState.lastPhase){ tick(true); bState.lastPhase = ph; bState.lastSec = Math.floor(el); }
+    else if(Math.floor(el) !== bState.lastSec){ tick(false); bState.lastSec = Math.floor(el); }
+    document.getElementById('bLabel').textContent = PHASES[ph][0];
+    document.getElementById('bSub').textContent = `${PHASES[ph][1]} ・ ${Math.ceil(pat[ph]-t)}　残り ${Math.ceil((total-el)/60)}分`;
+    bState.raf = requestAnimationFrame(loop);
+  };
+  bState.raf = requestAnimationFrame(loop);
+}
+function stopBreath(done){
+  bState.run = false; cancelAnimationFrame(bState.raf);
+  document.getElementById('bStart').textContent = 'はじめる';
+  document.getElementById('bLabel').textContent = done ? '了' : '―';
+  document.getElementById('bSub').textContent = done ? '水銀は、静かに落ち着いた' : '準備ができたら';
+  setMercury(0);
+}
+
+/* =========================================================
+   履歴
+   ========================================================= */
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmt(iso){ const d = new Date(iso); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function entryList(es){
+  return '<ul>' + es.map(e=>`<li><b>${esc(e.body_part)}</b>　${esc(e.sensation_words.join(' → '))}${e.color?`　<span class="muted">${esc(e.color)}</span>`:''}
+    <span class="${e.shift_occurred?'shift':'noshift'}">${e.shift_occurred?'　✦ シフト':'　· 区切り'}</span>
+    ${e.note?`<div class="muted" style="white-space:pre-wrap">${esc(e.note)}</div>`:''}</li>`).join('') + '</ul>';
+}
+function renderHistory(){
+  const el = document.getElementById('histList');
+  if(!store.sessions.length){ el.innerHTML = '<div class="brass panel"><p class="muted">まだ記録はない。最初の一頁は、きみが書くものだ。</p></div>'; return; }
+  el.innerHTML = store.sessions.map(s=>`<div class="brass log">
+      <button class="del" data-sid="${esc(s.session_id)}">消す</button>
+      <div class="date">${fmt(s.started_at)}${store.pending.includes(s.session_id)?' ・ 送信待ち':''}</div>
+      ${entryList(s.entries)}</div>`).join('');
+  el.querySelectorAll('.del').forEach(b=>b.onclick=()=>deleteSession(b.dataset.sid));
+}
+
+/* =========================================================
+   分析
+   ========================================================= */
+function bars(pairs, rose){
+  const max = Math.max(1, ...pairs.map(p=>p[1]));
+  return pairs.map(([k,v])=>`<div class="bar"><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="track"><span class="fill ${rose?'rose':''}" style="width:${v/max*100}%"></span></span><span class="n">${v}</span></div>`).join('');
+}
+function weekKey(iso){
+  const d = new Date(iso); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay()+6)%7));
+  return `${d.getMonth()+1}/${d.getDate()}〜`;
+}
+function renderStats(){
+  const el = document.getElementById('statsBody');
+  const es = store.sessions.flatMap(s=>s.entries.map(e=>({...e, at:s.started_at})));
+  if(!es.length){ el.innerHTML = '<div class="brass panel"><p class="muted">標本棚はまだ空だ。何度か潜ると、傾向が見えてくる。</p></div>'; return; }
+  const count = (arr) => { const m = new Map(); arr.forEach(k=>m.set(k,(m.get(k)||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]); };
+  const shifts = es.filter(e=>e.shift_occurred);
+  // 部位ヒートマップ：出現回数とシフト率
+  const parts = count(es.map(e=>e.body_part)), maxP = parts[0][1];
+  const heat = parts.map(([p,n])=>{
+    const sh = es.filter(e=>e.body_part===p && e.shift_occurred).length, a = .12 + .6*n/maxP;
+    return `<div style="background:rgba(176,148,87,${a.toFixed(2)})"><b>${n}</b>${esc(p)}<br><span class="muted">シフト ${sh}</span></div>`;
+  }).join('');
+  // 週次シフト推移（直近8週）
+  const weeks = new Map();
+  store.sessions.slice().reverse().forEach(s=>{ const k = weekKey(s.started_at); weeks.set(k, (weeks.get(k)||0) + s.entries.filter(e=>e.shift_occurred).length); });
+  const wk = [...weeks].slice(-8);
+  // シフトまでの問いかけ回数
+  const asks = count(shifts.map(e=>`${e.asks||0}回`)).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
+  const avg = shifts.length ? (shifts.reduce((a,e)=>a+(e.asks||0),0)/shifts.length).toFixed(1) : '—';
+  el.innerHTML = `
+    <div class="brass panel"><div class="stat">
+      <div><b>${store.sessions.length}</b><span>潜った回数</span></div>
+      <div><b>${shifts.length}</b><span>シフト</span></div>
+      <div><b>${avg}</b><span>シフトまでの問い（平均）</span></div>
+    </div></div>
+    <div class="brass panel"><h3>部位の標本（濃いほど多く訪れた場所）</h3><div class="heat">${heat}</div></div>
+    <div class="brass panel"><h3>感覚の言葉</h3>${bars(count(es.flatMap(e=>e.sensation_words)).slice(0,12))}</div>
+    ${es.some(e=>e.color) ? `<div class="brass panel"><h3>色</h3>${bars(count(es.filter(e=>e.color).map(e=>e.color)).slice(0,8), true)}</div>` : ''}
+    <div class="brass panel"><h3>週ごとのシフト</h3>${bars(wk)}</div>
+    ${asks.length ? `<div class="brass panel"><h3>シフトまでに問いかけた回数</h3>${bars(asks, true)}</div>` : ''}`;
+}
+
+/* ---------- 起動 ---------- */
+greet(); showSync(); sync();
+</script>
+</body>
+</html>
