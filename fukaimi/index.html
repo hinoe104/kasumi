@@ -151,7 +151,8 @@ svg{stroke-linecap:round;stroke-linejoin:round}
   border:1px solid rgba(176,148,87,.7);border-left:0;border-radius:0 3px 3px 0;
   box-shadow:3px 4px 12px rgba(0,0,0,.45);transition:transform .35s ease, opacity .35s;
 }
-.idxtab span{writing-mode:vertical-rl;font-size:13px;letter-spacing:.5em;color:var(--sepia);padding-bottom:.2em}
+.idxtab{display:flex;flex-direction:column;align-items:center;gap:6px;width:30px}
+.idxtab span{display:block;font-size:13px;line-height:1;color:var(--sepia)}
 .idxtab::after{content:"";position:absolute;right:3px;top:6px;bottom:6px;border-right:1px solid rgba(176,148,87,.3)}
 body.drawer-open .idxtab{transform:translateX(-100%);opacity:0}
 .drawer-veil{position:fixed;inset:0;z-index:8;background:rgba(10,14,12,.55);opacity:0;pointer-events:none;transition:opacity .4s ease}
@@ -365,7 +366,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
     <div class="plate">感覚標本室<span id="syncDot" class="dot"></span></div>
   </header>
   <!-- 左端の見出し札：押すと目録（引き出し）が滑り出る -->
-  <button class="idxtab" style="display:none" onclick="openDrawer()" aria-label="目録をひらく"><span>目録</span></button>
+  <button class="idxtab" style="display:none" onclick="openDrawer()" aria-label="目録をひらく"><span>目</span><span>録</span></button>
   <div class="dock">
     <button class="dive" onclick="startSelect()"><span class="ring"></span><b>採集する</b><small>Focusing</small></button>
     <div class="brass speech" onclick="nextTalk()"><span class="name">黒百合</span><p id="greet"></p><span class="next">▼</span></div>
