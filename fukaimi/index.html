@@ -198,20 +198,21 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 .bwrap{display:flex;flex-direction:column;flex:1;align-items:center}
 .bwrap .head{width:100%}
 .bstage{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:0}
-.thermo{height:min(56vh,420px);width:auto;display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+.thermo{height:clamp(230px,calc(100dvh - 400px),min(56vh,420px));width:auto;display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
 .bread{width:8.5em;text-align:left}
 .ben{font-family:"IM Fell English",serif;font-style:italic;font-size:14px;color:var(--brass);letter-spacing:.15em;height:1.4em}
 .breath-label{font-size:34px;letter-spacing:.3em;font-weight:500;line-height:1.3;transition:opacity .6s}
 .breath-sub{font-size:12px;color:var(--ink-dim);margin-top:6px;font-variant-numeric:tabular-nums}
-.bprog{width:min(240px,70%);height:1px;background:rgba(176,148,87,.2);margin:10px 0 18px}
+.bprog{width:min(240px,70%);height:1px;background:rgba(176,148,87,.2);margin:8px 0 12px}
 .bprog span{display:block;height:100%;width:0;background:var(--brass)}
-.bctrl{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;transition:opacity .6s}
+.bctrl{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:4px 18px;width:min(280px,86%);transition:opacity .6s}
 .bctrl.quiet{opacity:.2;pointer-events:none}
-.opt{display:flex;align-items:center}
-.opt button{font-size:13px;color:var(--ink-dim);padding:4px 7px;border-bottom:1px solid transparent;letter-spacing:.08em}
-.opt button.on{color:var(--ink);border-bottom-color:var(--brass)}
-.opt+.opt::before{content:"·";color:var(--brass-dim);margin-right:10px}
-.orb{align-self:center;margin:22px 0 4px;width:84px;height:84px}
+.olbl{font-size:11px;color:var(--brass);letter-spacing:.3em}
+.opt{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid rgba(176,148,87,.15)}
+.opt button{font-size:13px;color:var(--ink-dim);padding:7px 0;letter-spacing:.08em;position:relative}
+.opt button.on{color:var(--ink)}
+.opt button.on::after{content:"";position:absolute;left:50%;bottom:-1px;width:1.8em;height:1px;background:var(--brass);transform:translateX(-50%)}
+.orb{align-self:center;margin:16px 0 0;width:84px;height:84px}
 .orb b{font-size:14px;letter-spacing:.15em}
 #bStart.running{background:radial-gradient(circle at 35% 30%,rgba(62,79,67,.95),rgba(20,26,22,.95))}
 #bStart.running .ring{animation:none;opacity:0}
@@ -362,13 +363,12 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
     </div>
     <div class="bprog"><span id="bProg"></span></div>
     <div class="bctrl" id="bCtrl">
-      <div class="opt" id="bPattern">
-        <button data-p="4,0,6,0" class="on">4–6</button><button data-p="4,4,4,4">箱</button><button data-p="4,7,8,0">4–7–8</button>
-      </div>
-      <div class="opt" id="bLen">
-        <button data-m="3">三分</button><button data-m="5" class="on">五分</button><button data-m="10">十分</button>
-      </div>
-      <div class="opt"><button id="bSound" onclick="toggleSound()"></button></div>
+      <span class="olbl">拍子</span>
+      <div class="opt" id="bPattern"><button data-p="4,0,6,0" class="on">4–6</button><button data-p="4,4,4,4">箱</button><button data-p="4,7,8,0">4–7–8</button></div>
+      <span class="olbl">時間</span>
+      <div class="opt" id="bLen"><button data-m="3">三分</button><button data-m="5" class="on">五分</button><button data-m="10">十分</button></div>
+      <span class="olbl">音</span>
+      <div class="opt" id="bSoundSeg"><button data-s="1">あり</button><button data-s="0">なし</button></div>
     </div>
     <button class="dive orb" id="bStart" onclick="toggleBreath()"><span class="ring"></span><b id="bStartTxt">はじめる</b></button>
   </div>
@@ -742,8 +742,8 @@ function segInit(id, cb){
 }
 segInit('bPattern', b=>bState.pat = b.dataset.p.split(',').map(Number));
 segInit('bLen', b=>bState.min = +b.dataset.m);
-function renderSoundBtn(){ const b = document.getElementById('bSound'); b.textContent = bState.sound ? '音 ◉' : '音 ○'; b.classList.toggle('on', bState.sound); }
-function toggleSound(){ bState.sound = !bState.sound; lsSet(K.sound, bState.sound); renderSoundBtn(); }
+function renderSoundBtn(){ document.querySelectorAll('#bSoundSeg button').forEach(b=>b.classList.toggle('on', (b.dataset.s==='1')===bState.sound)); }
+segInit('bSoundSeg', b=>{ bState.sound = b.dataset.s==='1'; lsSet(K.sound, bState.sound); });
 renderSoundBtn();
 function tick(accent){
   if(!bState.sound) return;
