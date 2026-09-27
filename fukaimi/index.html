@@ -164,6 +164,21 @@ svg{stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- 部位選択 ---------- */
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+.openstart{display:block;width:100%;text-align:left;padding:18px 18px 16px;margin-bottom:6px}
+.openstart b{display:block;font-size:17px;letter-spacing:.12em;margin-bottom:4px}
+.openstart span{font-size:12px;color:var(--ink-dim);line-height:1.7;display:block}
+.or{display:flex;align-items:center;gap:10px;margin:14px 0 12px;font-size:11px;color:var(--ink-dim);letter-spacing:.12em}
+.or::before,.or::after{content:"";flex:1;height:1px;background:rgba(176,148,87,.25)}
+.pgroup{display:grid;grid-template-columns:3.6em 1fr;align-items:start;gap:10px;padding:8px 0;border-top:1px solid rgba(176,148,87,.12)}
+.pgroup:first-child{border-top:0;padding-top:0}
+.pgroup .g{font-size:11px;color:var(--brass);letter-spacing:.2em;padding-top:7px}
+.pgroup .tags{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tag{
+  position:relative;padding:7px 2px;font-size:13px;text-align:center;letter-spacing:.06em;
+  border:1px solid rgba(176,148,87,.28);background:rgba(20,26,22,.35);border-radius:1px;transition:all .2s;
+}
+.tag.sel{border-color:var(--brass);background:rgba(125,106,63,.42);color:#fff}
+.tag .no{position:absolute;top:-7px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--brass);color:var(--moss-deep);font-size:10px;line-height:16px;font-family:"IM Fell English",serif}
 .chip{
   padding:7px 13px;font-size:14px;border:1px solid rgba(176,148,87,.4);border-radius:999px;
   background:rgba(20,26,22,.5);transition:all .2s;
@@ -283,15 +298,18 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 <!-- 部位選択 -->
 <section class="screen" id="select">
   <div class="wrap">
-    <div class="head"><h2>今日、たどる場所</h2><button class="back" onclick="go('main')">← 戻る</button></div>
+    <div class="head"><h2>採集</h2><button class="back" onclick="go('main')">← 戻る</button></div>
+    <button class="brass openstart" onclick="beginSession(true)">
+      <b>わからないまま、はじめる</b>
+      <span>黒百合が頭から足先まで順に案内する。引っかかった場所から採集していく。</span>
+    </button>
+    <div class="or"><span>あるいは、場所が決まっているなら</span></div>
     <div class="brass panel">
-      <p class="lead">気になっている場所を、多くても三つまで。
-順番に、ひとつずつ見ていこう。</p>
-      <div class="chips" id="partChips"></div>
+      <div id="partChips"></div>
       <div class="addrow"><input class="field" id="partInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" onclick="addPart()">加える</button></div>
       <p class="hint" id="selCount"></p>
     </div>
-    <button class="btn primary" style="width:100%" id="beginBtn" onclick="beginSession()" disabled>採集をはじめる</button>
+    <button class="btn primary" style="width:100%" id="beginBtn" onclick="beginSession(false)" disabled>この順に採集する</button>
   </div>
 </section>
 
@@ -550,18 +568,33 @@ function greet(){
 /* =========================================================
    感覚トラッキング
    ========================================================= */
-const PARTS = ['みぞおち','喉','胸','お腹','首','肩','背中','後頭部','額','顎','脇','腰','手','脚'];
+const PART_GROUPS = [
+  ['頭',   ['額','目の奥','後頭部']],
+  ['首',   ['顎','喉','首']],
+  ['胸・腹', ['胸','みぞおち','お腹']],
+  ['背',   ['肩','背中','脇']],
+  ['腰・肢', ['腰','手','脚']],
+];
+const PARTS = PART_GROUPS.flatMap(g=>g[1]);
 let selected = [];
 function startSelect(){
   selected = []; document.getElementById('partInput').value=''; renderChips(); go('select');
 }
+// 部位の標本札。picked=選択中の配列、onTap=タップ時
+function partTags(picked, withNo){
+  const extra = picked.filter(p=>!PARTS.includes(p));
+  const groups = extra.length ? [...PART_GROUPS, ['その他', extra]] : PART_GROUPS;
+  return groups.map(([g,ps])=>`<div class="pgroup"><span class="g">${g}</span><div class="tags">${
+    ps.map(p=>{ const i = picked.indexOf(p);
+      return `<button class="tag ${i>=0?'sel':''}" data-p="${esc(p)}">${esc(p)}${withNo && i>=0?`<span class="no">${i+1}</span>`:''}</button>`; }).join('')
+  }</div></div>`).join('');
+}
 function renderChips(){
-  const all = [...new Set([...PARTS, ...selected])];
-  document.getElementById('partChips').innerHTML = all.map(p=>
-    `<button class="chip ${selected.includes(p)?'sel':''}" data-p="${esc(p)}">${esc(p)}</button>`).join('');
-  document.querySelectorAll('#partChips .chip').forEach(b=>b.onclick=()=>togglePart(b.dataset.p));
+  const el = document.getElementById('partChips');
+  el.innerHTML = partTags(selected, true);
+  el.querySelectorAll('.tag').forEach(b=>b.onclick=()=>togglePart(b.dataset.p));
   document.getElementById('selCount').textContent = selected.length
-    ? `選んだ順：${selected.join(' → ')}（${selected.length}/3）` : 'まだ選んでいません';
+    ? `${selected.join(' → ')}（${selected.length}/3）` : '多くても三つまで。選んだ順にたどる。';
   document.getElementById('beginBtn').disabled = !selected.length;
 }
 function togglePart(p){
@@ -581,15 +614,24 @@ let checkTimer = null;  // 5分おきの様子うかがい
 const CHECK_MS = 5*60*1000;
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
-function beginSession(){
-  S = {session_id:uid(), started_at:new Date().toISOString(), ended_at:null, entries:[], parts:[...selected], idx:0, step:0, cur:null};
+function beginSession(open){
+  // open=true：場所を決めずに始める。全身を順にたどり、引っかかった場所を一つずつ採集（最大3）
+  S = {session_id:uid(), started_at:new Date().toISOString(), ended_at:null, entries:[], open, parts:open?[]:[...selected], idx:0, step:0, cur:null};
   clearInterval(checkTimer); checkTimer = setInterval(checkIn, CHECK_MS);
   nextPart(); go('session');
 }
+const MAX_PARTS = 3;
 function nextPart(){
-  const p = S.parts[S.idx];
+  const p = S.open ? null : S.parts[S.idx];
   S.cur = {body_part:p, sensation_words:[], color:'', shift_occurred:false, note:'', asks:0, noticed:''};
-  S.step = 0; renderStep();
+  S.step = p ? 0 : -1;   // -1＝全身をたどって場所を見つける段
+  renderStep();
+}
+function hasNext(){ return S.open ? S.entries.length < MAX_PARTS : S.idx < S.parts.length; }
+const SCAN_LINE = '急がなくていい。頭のてっぺんから、ゆっくり下へ——\n額、目の奥、顎。喉、肩。胸、みぞおち、お腹。背中、腰、手足……\n意識がどこかで引っかかったら、そこだ。わからなければ、それもまた答えだよ。';
+const SCAN_AGAIN = 'もう一度、全身をなぞってみたまえ。\nさっきとは別のところで、何かが声を上げていないか。';
+function pickFound(p){
+  S.cur.body_part = p; S.step = 0; renderStep();
 }
 const STEP_LINES = [
   p => `${p}に、意識をそっと置きたまえ。\n変えようとしなくていい。温度、重さ、質感——ただ、そこに在るものに気づくだけだ。`,
@@ -601,8 +643,9 @@ const ASKS = ['お前は、何を求めている？','いま、どんな状態�
 
 function renderStep(){
   const c = S.cur, p = c.body_part;
+  document.getElementById('sCounter').textContent = S.open ? `${S.entries.length+1} / ${MAX_PARTS}` : `${S.idx+1} / ${S.parts.length}`;
+  if(S.step<0) return renderScan();
   document.getElementById('sPart').textContent = p;
-  document.getElementById('sCounter').textContent = `${S.idx+1} / ${S.parts.length}`;
   document.querySelectorAll('#sSteps span').forEach((s,i)=>s.classList.toggle('on', i<=S.step));
   let line = STEP_LINES[S.step](p);
   if(S.step===2 && c.asks>0) line = `もう一度、角度を変えよう。\n——「${ASKS[c.asks % ASKS.length]}」\n急かしはしない。`;
@@ -635,6 +678,20 @@ function renderStep(){
         <button class="btn ghost wide" onclick="shift(false)">今日はここまでにする</button>
       </div>`;
   }
+}
+function renderScan(){
+  document.getElementById('sPart').textContent = '……';
+  document.querySelectorAll('#sSteps span').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sLine').textContent = S.entries.length ? SCAN_AGAIN : SCAN_LINE;
+  const b = document.getElementById('sBody');
+  b.innerHTML = `<h3>引っかかった場所</h3><div id="scanTags">${partTags([], false)}</div>
+    <div class="addrow"><input class="field" id="scanInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" id="scanAdd">そこだ</button></div>
+    <div class="row"><button class="btn ghost" onclick="pickFound('名のない場所')">場所は言えない</button>${S.entries.length?'<button class="btn" onclick="finish(\'rest\')">今日はここまで</button>':''}</div>`;
+  b.querySelectorAll('.tag').forEach(t=>t.onclick=()=>pickFound(t.dataset.p));
+  const inp = document.getElementById('scanInput');
+  const add = ()=>{ const v = inp.value.trim(); if(v) pickFound(v); };
+  document.getElementById('scanAdd').onclick = add;
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) add(); });
 }
 function saveFields(){
   const c = S.cur; const g = id => document.getElementById(id);
@@ -673,26 +730,28 @@ function commitEntry(shifted){
 function shift(yes){
   commitEntry(yes);
   S.idx++;
-  if(S.idx < S.parts.length){
+  if(hasNext()){
     nextPart();
-    document.getElementById('sLine').textContent = (yes ? 'よろしい。動いたなら、そこで区切る。\n' : '深追いはしない。それでいい。\n')
-      + `次は——${S.cur.body_part}。` + '\n' + STEP_LINES[0](S.cur.body_part).split('\n')[1];
+    const head = yes ? 'よろしい。動いたなら、そこで区切る。\n' : '深追いはしない。それでいい。\n';
+    document.getElementById('sLine').textContent = S.open ? head + SCAN_AGAIN.split('\n')[1]
+      : head + `次は——${S.cur.body_part}。` + '\n' + STEP_LINES[0](S.cur.body_part).split('\n')[1];
   } else finish(yes ? 'shift' : 'rest');
 }
 function shallow(){
   // 扉のそばへ：いまの部位を切り上げて、温室の奥から戻る
   if(!confirm('扉のそばまで戻りますか？（いまの部位はここで区切ります）')) return;
-  commitEntry(false);
+  if(S.cur.body_part) commitEntry(false);
   S.idx++;
-  if(S.idx < S.parts.length){
+  if(hasNext() && S.entries.length){
     nextPart();
-    document.getElementById('sLine').textContent = '扉のそばまで戻った。まずは呼吸をひとつ。\n続けるなら次は' + S.cur.body_part + 'だが——やめたいなら「外へ出る」と言いたまえ。咎めはしない。';
+    document.getElementById('sLine').textContent = '扉のそばまで戻った。まずは呼吸をひとつ。\n'
+      + (S.open ? '続けるなら別の場所を探せばいい' : '続けるなら次は' + S.cur.body_part) + 'が——やめたいなら「外へ出る」と言いたまえ。咎めはしない。';
   } else finish('shallow');
 }
 function toBeach(){
   // 外へ出る：即終了。途中でも記録は残す
   saveFields();
-  if(S.step>0 || S.cur.noticed || S.cur.sensation_words.length) commitEntry(false);
+  if(S.cur.body_part && (S.step>0 || S.cur.noticed || S.cur.sensation_words.length)) commitEntry(false);
   finish('beach');
 }
 function checkIn(){
