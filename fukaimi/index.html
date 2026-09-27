@@ -214,6 +214,13 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 /* ---------- 呼吸（水銀柱） ---------- */
 .bwrap{display:flex;flex-direction:column;flex:1;align-items:center}
 .bwrap .head{width:100%}
+#bSafety,.bguide{display:none}
+#breath.insession #bSafety{display:flex;width:100%}
+#breath.insession .bctrl,#breath.insession .back,#breath.insession #bStart{display:none}
+#breath.insession .bguide{display:block;width:100%;text-align:center;font-size:13px;color:var(--ink-dim);line-height:1.8;min-height:3.6em;white-space:pre-wrap}
+.pager{display:flex;justify-content:center;gap:6px;margin-bottom:14px}
+.pager i{width:5px;height:5px;border-radius:50%;background:rgba(176,148,87,.3)}
+.pager i.on{background:var(--brass)}
 .bstage{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:0}
 .thermo{height:clamp(230px,calc(100dvh - 400px),min(56vh,420px));width:auto;display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
 .bread{width:8.5em;text-align:left}
@@ -286,7 +293,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
   </header>
   <!-- 左の計器列（顔にかからない側） -->
   <nav class="side">
-    <button class="medal" onclick="go('breath')"><svg viewBox="0 0 24 24"><rect x="10" y="3" width="4" height="13" rx="2"/><circle cx="12" cy="18.5" r="3"/><path d="M12 9v7" stroke-width="2.4"/></svg><span>呼吸</span></button>
+    <button class="medal" onclick="openBreath()"><svg viewBox="0 0 24 24"><rect x="10" y="3" width="4" height="13" rx="2"/><circle cx="12" cy="18.5" r="3"/><path d="M12 9v7" stroke-width="2.4"/></svg><span>呼吸</span></button>
     <button class="medal" onclick="renderHistory();go('history')"><svg viewBox="0 0 24 24"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h11M9 8h6M9 11h4"/></svg><span>記録</span></button>
     <button class="medal" onclick="renderStats();go('stats')"><svg viewBox="0 0 24 24"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 11c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-2.5 0-4-1.5-4-4 2.5 0 4 1.5 4 4z"/></svg><span>標本棚</span></button>
   </nav>
@@ -335,7 +342,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
     <div class="brass speech"><span class="name">黒百合</span><p id="doneLine"></p></div>
     <div class="brass panel" id="doneSummary"></div>
     <div class="menu">
-      <button class="btn" onclick="go('breath')">呼吸で締める</button>
+      <button class="btn" onclick="openBreath()">呼吸で締める</button>
       <button class="btn primary" onclick="go('main')">温室に戻る</button>
     </div>
   </div>
@@ -344,7 +351,8 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 <!-- 呼吸 -->
 <section class="screen" id="breath">
   <div class="wrap bwrap">
-    <div class="head"><h2>呼吸</h2><button class="back" onclick="stopBreath();go('main')">← 戻る</button></div>
+    <div class="head"><h2 id="bTitle">呼吸</h2><button class="back" onclick="stopBreath();go('main')">← 戻る</button></div>
+    <div class="bguide" id="bGuide"></div>
     <div class="bstage">
       <svg class="thermo" viewBox="0 0 120 450" aria-label="温度計">
         <defs>
@@ -391,6 +399,10 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
       <div class="opt" id="bSoundSeg"><button data-s="1">あり</button><button data-s="0">なし</button></div>
     </div>
     <button class="dive orb" id="bStart" onclick="toggleBreath()"><span class="ring"></span><b id="bStartTxt">はじめる</b></button>
+    <div class="safety" id="bSafety">
+      <button onclick="breathExit(shallow)">扉のそばへ</button>
+      <button onclick="breathExit(toBeach)">外へ出る</button>
+    </div>
   </div>
 </section>
 
@@ -626,10 +638,39 @@ const MAX_PARTS = 3;
 function nextPart(){
   const p = S.open ? null : S.parts[S.idx];
   S.cur = {body_part:p, sensation_words:[], color:'', shift_occurred:false, note:'', asks:0, noticed:''};
-  S.step = p ? 0 : -1;   // -1＝全身をたどって場所を見つける段
+  // -2＝導入の語り → 呼吸3分 → -1＝全身をなぞって場所を見つける段
+  S.step = p ? 0 : (S.rounds===undefined ? -2 : -1);
+  if(S.step===-2){ S.rounds = 0; S.page = 0; }
   renderStep();
 }
 function hasNext(){ return S.open ? S.entries.length < MAX_PARTS : S.idx < S.parts.length; }
+const INTRO = [
+  'わからない、か。……正直でよろしい。\nわからないまま来たのなら、まずは身体を静かにするところからだ。',
+  'これから3分、呼吸を整える。\n音が鳴ったら吸い、次の音で吐く。水銀の上下を目で追うだけでいい。',
+  '数えるのは私の役目だ。お前は、ただ息をしていたまえ。\n終わったら、一緒に身体をなぞろう。',
+];
+const RETRY = [
+  'まだ見つからないか。構わない。\n身体が口を開くまで、少し時間のかかる日もある。',
+  'もう一度、3分だけ呼吸に付き合いたまえ。\n今度は吐く息の終わりに、どこが緩み損ねているかを感じてみるといい。',
+];
+const AFTER_BREATH = '……よろしい。水銀は落ち着いた。\n頭から足先へ、ゆっくりなぞりたまえ。意識が引っかかった場所があれば、そこだ。';
+const QUIET_DAY = '二度なぞって何も引っかからないなら、今日の身体は静かだということだ。\nそれもまた記録になる。もう一度試すか、ここで扉を閉めるか——お前が決めたまえ。';
+function renderIntro(){
+  const lines = S.rounds ? RETRY : INTRO, last = S.page >= lines.length-1;
+  document.getElementById('sPart').textContent = '支度';
+  document.getElementById('sCounter').textContent = S.rounds ? `${S.rounds+1}度目` : '';
+  document.querySelectorAll('#sSteps span').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sLine').textContent = lines[S.page];
+  document.getElementById('sBody').innerHTML = `<div class="pager">${lines.map((_,i)=>`<i class="${i<=S.page?'on':''}"></i>`).join('')}</div>
+    <button class="btn primary" style="width:100%" id="introNext">${last ? '呼吸をはじめる（3分）' : '次へ'}</button>`;
+  document.getElementById('introNext').onclick = ()=>{
+    if(!last){ S.page++; renderIntro(); return; }
+    sessionBreath(()=>{ S.rounds++; S.step = -1; go('session'); renderStep(); });
+  };
+}
+// 呼吸中の合図：呼吸を止めてセッション画面に戻してから、合図の処理へ
+function breathExit(fn){ stopBreath(); go('session'); renderStep(); fn(); }
+function retryBreath(){ S.step = -2; S.page = 0; renderStep(); }
 const SCAN_LINE = '頭から足先へ、ゆっくりなぞりたまえ。\n意識が引っかかった場所があれば、そこだ。\nわからないなら、それで構わない。わかったふりをされるより、よほどいい。';
 const SCAN_AGAIN = 'もう一度、全身をなぞってみたまえ。\n先ほどとは別のところで、何かが声を上げてはいないかね。';
 function pickFound(p){
@@ -646,6 +687,7 @@ const ASKS = ['お前は、何を求めている？','今、どんな具合だ�
 function renderStep(){
   const c = S.cur, p = c.body_part;
   document.getElementById('sCounter').textContent = S.open ? `${S.entries.length+1} / ${MAX_PARTS}` : `${S.idx+1} / ${S.parts.length}`;
+  if(S.step===-2) return renderIntro();
   if(S.step<0) return renderScan();
   document.getElementById('sPart').textContent = p;
   document.querySelectorAll('#sSteps span').forEach((s,i)=>s.classList.toggle('on', i<=S.step));
@@ -684,11 +726,11 @@ function renderStep(){
 function renderScan(){
   document.getElementById('sPart').textContent = '全身をなぞる';
   document.querySelectorAll('#sSteps span').forEach(s=>s.classList.remove('on'));
-  document.getElementById('sLine').textContent = S.entries.length ? SCAN_AGAIN : SCAN_LINE;
+  document.getElementById('sLine').textContent = S.entries.length ? SCAN_AGAIN : S.rounds>=2 ? QUIET_DAY : S.rounds ? AFTER_BREATH : SCAN_LINE;
   const b = document.getElementById('sBody');
   b.innerHTML = `<h3>引っかかった場所</h3><div id="scanTags">${partTags([], false)}</div>
     <div class="addrow"><input class="field" id="scanInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" id="scanAdd">そこだ</button></div>
-    <div class="links"><button onclick="pickFound('名のない場所')">場所は言えない</button>${S.entries.length?'<button onclick="finish(\'rest\')">今日はここまで</button>':''}</div>`;
+    <div class="links"><button onclick="retryBreath()">まだ、わからない</button><button onclick="finish('rest')">今日はここまで</button></div>`;
   b.querySelectorAll('.tag').forEach(t=>t.onclick=()=>pickFound(t.dataset.p));
   const inp = document.getElementById('scanInput');
   const add = ()=>{ const v = inp.value.trim(); if(v) pickFound(v); };
@@ -822,8 +864,23 @@ function setMercury(f){ // 0..1
   document.getElementById('hgGlow').setAttribute('cy', top);
 }
 function toggleBreath(){ bState.run ? stopBreath() : startBreath(); }
+function openBreath(){
+  document.getElementById('breath').classList.remove('insession');
+  document.getElementById('bTitle').textContent = '呼吸';
+  bState.onDone = null; go('breath');
+}
+// 採集前の支度：4–6 のリズムで3分。終わったら onDone
+function sessionBreath(onDone){
+  stopBreath();
+  document.getElementById('breath').classList.add('insession');
+  document.getElementById('bTitle').textContent = '支度の呼吸';
+  document.getElementById('bGuide').textContent = '音が鳴ったら吸い、次の音で吐く。\n数えるのは私の役目だ。';
+  bState.saved = {pat:bState.pat, min:bState.min};
+  bState.pat = [4,0,6,0]; bState.min = 3; bState.onDone = onDone;
+  go('breath'); startBreath();
+}
 function startBreath(){
-  if(actx && actx.state==='suspended') actx.resume();
+  try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){}
   bState.run = true; bState.t0 = performance.now(); bState.lastSec = -1; bState.lastPhase = -1;
   document.getElementById('bStartTxt').textContent = 'やめる';
   document.getElementById('bStart').classList.add('running');
@@ -857,6 +914,13 @@ function stopBreath(done){
   document.getElementById('bSub').textContent = done ? '水銀は静かに落ち着いた。……上出来だ' : '支度ができたら';
   document.getElementById('bProg').style.width = done ? '100%' : '0';
   setMercury(0);
+  if(bState.saved){ bState.pat = bState.saved.pat; bState.min = bState.saved.min; bState.saved = null; }
+  const cb = bState.onDone; bState.onDone = null;
+  if(document.getElementById('breath').classList.contains('insession')){
+    document.getElementById('breath').classList.remove('insession');
+    document.getElementById('bTitle').textContent = '呼吸';
+    if(done && cb) cb();
+  }
 }
 
 /* =========================================================
