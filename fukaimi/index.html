@@ -91,7 +91,6 @@ input,textarea{font:inherit;color:var(--ink)}
 .brass::before{left:14px}.brass::after{right:14px}
 
 /* ---------- メイン ---------- */
-#main{justify-content:flex-end}
 .speech{padding:22px 20px 18px;margin-bottom:14px;min-height:112px}
 .speech .name{
   position:absolute;top:-14px;left:28px;padding:0 12px;
@@ -116,6 +115,43 @@ input,textarea{font:inherit;color:var(--ink)}
 .menu .wide{grid-column:1/-1}
 .sync{margin-top:10px;font-size:11px;color:var(--ink-dim);text-align:center}
 .sync button{text-decoration:underline;font-size:11px;color:var(--ink-dim)}
+
+/* ---------- ホーム（ソシャゲ風HUD） ---------- */
+#main{padding-left:12px;padding-right:12px}
+.hud{display:flex;align-items:center;justify-content:space-between}
+.plate{
+  font-size:15px;font-weight:700;letter-spacing:.25em;padding:6px 16px 6px 18px;
+  background:linear-gradient(90deg,rgba(20,26,22,.85),rgba(20,26,22,.35));
+  border-left:2px solid var(--brass);display:flex;align-items:center;gap:10px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim)}
+.dot.ok{background:#8fae7e;box-shadow:0 0 6px #8fae7e}.dot.ng{background:var(--rose)}
+.gear,.medal{
+  border-radius:50%;border:1px solid var(--brass);
+  background:radial-gradient(circle at 35% 30%,rgba(62,79,67,.95),rgba(20,26,22,.95));
+  box-shadow:inset 0 0 0 3px rgba(20,26,22,.9),inset 0 0 0 4px rgba(176,148,87,.4),0 4px 12px rgba(0,0,0,.5);
+}
+.gear{width:40px;height:40px;display:grid;place-items:center}
+svg{stroke-linecap:round;stroke-linejoin:round}
+.gear svg,.medal svg{width:22px;height:22px;fill:none;stroke:var(--brass);stroke-width:1.5}
+.side{display:flex;flex-direction:column;gap:14px;margin-top:22px;align-self:flex-start}
+.medal{width:60px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.medal span{font-size:10px;letter-spacing:.1em;color:var(--sepia);line-height:1}
+.dock{margin-top:auto;width:100%;max-width:560px;align-self:center;display:flex;flex-direction:column}
+.dive{
+  align-self:flex-end;position:relative;width:92px;height:92px;border-radius:50%;margin:0 6px -18px 0;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,rgba(150,128,78,.95),rgba(52,48,34,.97));
+  border:1px solid var(--brass);
+  box-shadow:inset 0 0 0 4px rgba(20,26,22,.6),inset 0 0 0 5px rgba(216,204,180,.35),0 6px 18px rgba(0,0,0,.6);
+}
+.dive b{font-size:20px;letter-spacing:.2em;padding-left:.2em}
+.dive small{font-family:"IM Fell English",serif;font-style:italic;font-size:10px;color:var(--sepia)}
+.dive .ring{position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(176,148,87,.5);animation:pulse 3.2s ease-in-out infinite}
+@keyframes pulse{50%{inset:-12px;opacity:.15}}
+#main .speech{margin-bottom:6px;cursor:pointer;min-height:96px;padding-right:40px}
+.speech .next{position:absolute;right:16px;bottom:10px;font-size:10px;color:var(--brass);animation:blink 1.6s infinite}
+#main .sync{margin-top:2px}
 
 /* ---------- 共通ヘッダ ---------- */
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
@@ -211,15 +247,23 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 
 <!-- メイン -->
 <section class="screen" id="main">
-  <div class="wrap">
-    <div class="brass speech"><span class="name">黒百合</span><p id="greet"></p></div>
-    <div class="menu">
-      <button class="btn primary wide" onclick="startSelect()">感覚をたどる<small>Focusing</small></button>
-      <button class="btn" onclick="go('breath')">呼吸を整える<small>Breathing</small></button>
-      <button class="btn" onclick="renderHistory();go('history')">記録を読む<small>Journal</small></button>
-      <button class="btn wide" onclick="renderStats();go('stats')">標本棚をひらく<small>Herbarium · Analysis</small></button>
-    </div>
-    <div class="sync"><span id="syncState"></span> ・ <button onclick="openSettings()">保存先の設定</button></div>
+  <!-- 上部バー -->
+  <header class="hud">
+    <div class="plate">深海潜り<span id="syncDot" class="dot"></span></div>
+    <button class="gear" onclick="openSettings()" aria-label="設定">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/></svg>
+    </button>
+  </header>
+  <!-- 左の計器列（顔にかからない側） -->
+  <nav class="side">
+    <button class="medal" onclick="go('breath')"><svg viewBox="0 0 24 24"><rect x="10" y="3" width="4" height="13" rx="2"/><circle cx="12" cy="18.5" r="3"/><path d="M12 9v7" stroke-width="2.4"/></svg><span>呼吸</span></button>
+    <button class="medal" onclick="renderHistory();go('history')"><svg viewBox="0 0 24 24"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h11M9 8h6M9 11h4"/></svg><span>記録</span></button>
+    <button class="medal" onclick="renderStats();go('stats')"><svg viewBox="0 0 24 24"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 11c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-2.5 0-4-1.5-4-4 2.5 0 4 1.5 4 4z"/></svg><span>標本棚</span></button>
+  </nav>
+  <div class="dock">
+    <button class="dive" onclick="startSelect()"><span class="ring"></span><b>潜る</b><small>Focusing</small></button>
+    <div class="brass speech" onclick="greet()"><span class="name">黒百合</span><p id="greet"></p><span class="next">▼</span></div>
+    <div class="sync" id="syncState"></div>
   </div>
 </section>
 
@@ -413,6 +457,7 @@ async function sync(){
 function showSync(){
   const el = document.getElementById('syncState');
   const n = store.pending.length;
+  document.getElementById('syncDot').className = 'dot' + (store.online===null ? '' : store.online && !n ? ' ok' : ' ng');
   el.textContent = store.online===null ? '同期中…'
     : store.online ? (n ? `送信待ち ${n}件` : '温室の記録と同期済み')
     : `保存先に届かず・この端末に控え${n?`（送信待ち ${n}件）`:''}`;
