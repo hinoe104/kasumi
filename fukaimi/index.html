@@ -241,29 +241,62 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 #bStart.running{background:radial-gradient(circle at 35% 30%,rgba(62,79,67,.95),rgba(20,26,22,.95))}
 #bStart.running .ring{animation:none;opacity:0}
 
-/* ---------- 履歴 ---------- */
-.log{padding:14px 16px;margin-bottom:10px}
-.log .date{font-size:12px;color:var(--ink-dim);font-family:"IM Fell English",serif}
-.log ul{list-style:none;margin-top:6px}
-.log li{font-size:14px;padding:4px 0;border-top:1px dashed rgba(176,148,87,.2)}
-.log li:first-child{border-top:0}
-.shift{color:var(--brass)}
-.noshift{color:var(--ink-dim)}
-.log .del{float:right;font-size:11px;color:var(--ink-dim)}
+/* ---------- 採集帳（履歴） ---------- */
+.month{display:flex;align-items:baseline;gap:10px;margin:18px 2px 8px;font-size:15px;letter-spacing:.18em;font-weight:500}
+.month:first-child{margin-top:4px}
+.month::after{content:"";flex:1;height:1px;background:rgba(176,148,87,.3)}
+.month span{font-size:11px;color:var(--ink-dim);letter-spacing:.1em;order:2}
+.label{
+  position:relative;margin-bottom:10px;padding:12px 14px 10px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(38,48,42,.88),rgba(24,31,27,.92));
+  border:1px solid rgba(176,148,87,.45);outline:1px solid rgba(176,148,87,.18);outline-offset:-5px;
+}
+.lhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;padding-bottom:6px;border-bottom:1px dashed rgba(176,148,87,.25)}
+.ldate{font-family:"IM Fell English",serif;font-size:15px;letter-spacing:.06em}
+.ldate small{font-family:"Shippori Mincho B1",serif;font-size:11px;color:var(--ink-dim);margin-left:6px}
+.lmeta{font-size:11px;color:var(--ink-dim);letter-spacing:.06em}
+.spec{display:grid;grid-template-columns:14px 4.6em 1fr 14px;align-items:center;gap:8px;padding:4px 0;font-size:14px}
+.sw{width:11px;height:11px;border-radius:50%;border:1px solid rgba(216,204,180,.5)}
+.sw.none{background:none;border-style:dashed;border-color:rgba(216,204,180,.3)}
+.spec b{font-weight:700;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spec .wd{color:var(--sepia);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spec .wd i{font-style:normal;color:var(--brass-dim);margin:0 3px}
+.flower{width:14px;height:14px;fill:none;stroke:var(--brass);stroke-width:1}
+.ldetail{display:none;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(176,148,87,.25)}
+.label.open .ldetail{display:block}
+.ldetail .d{font-size:12px;color:var(--ink-dim);padding:3px 0 3px 22px;white-space:pre-wrap}
+.ldetail .d b{color:var(--ink);font-weight:500;margin-right:6px}
+.ldetail .foot{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--ink-dim)}
+.ldetail .del{font-size:11px;color:var(--rose);border-bottom:1px solid rgba(181,142,138,.4)}
 
-/* ---------- 分析 ---------- */
-.bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
-.bar .lbl{width:6.5em;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar .track{flex:1;height:10px;background:rgba(176,148,87,.12);position:relative}
-.bar .fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--brass-dim),var(--brass))}
-.bar .fill.rose{background:linear-gradient(90deg,#7e5f5c,var(--rose))}
-.bar .n{width:2.5em;text-align:right;color:var(--ink-dim);font-variant-numeric:tabular-nums}
-.heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
-.heat div{padding:10px 6px;text-align:center;font-size:12px;border:1px solid rgba(176,148,87,.25)}
-.heat b{display:block;font-size:18px}
-.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
-.stat b{display:block;font-size:24px;color:var(--brass);font-weight:700}
-.stat span{font-size:11px;color:var(--ink-dim)}
+/* ---------- 標本棚（分析） ---------- */
+.stat{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.stat div+div{border-left:1px solid rgba(176,148,87,.2)}
+.stat b{display:block;font-size:26px;color:var(--brass);font-weight:500;font-family:"IM Fell English",serif;line-height:1.2}
+.stat span{font-size:11px;color:var(--ink-dim);letter-spacing:.1em}
+.figs{display:flex;justify-content:center;gap:6px}
+.figs figure{text-align:center}
+.figs svg{height:min(46vh,300px);width:auto;display:block}
+.figs figcaption{font-family:"IM Fell English",serif;font-style:italic;font-size:11px;color:var(--ink-dim);letter-spacing:.15em}
+.body-line{fill:none;stroke:rgba(216,204,180,.45);stroke-width:.8;stroke-linecap:round;stroke-linejoin:round}
+.spot{cursor:pointer}
+.spot .hit{fill:transparent}
+.spot.sel .core{stroke:var(--ink);stroke-width:1}
+.pinfo{text-align:center;font-size:13px;min-height:1.8em;margin-top:6px}
+.pinfo b{letter-spacing:.1em;margin-right:8px}
+.pinfo span{color:var(--ink-dim);font-size:12px}
+.others{text-align:center;font-size:12px;color:var(--ink-dim);margin-top:4px}
+.cloud{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:4px 14px;padding:4px 0}
+.cloud span{line-height:1.5;letter-spacing:.04em}
+.swatches{display:flex;flex-wrap:wrap;gap:10px 16px}
+.swatches div{display:flex;align-items:center;gap:7px;font-size:13px}
+.swatches .sw{width:16px;height:16px}
+.swatches small{color:var(--ink-dim);font-size:11px}
+.tubes{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;align-items:end;text-align:center}
+.tube{position:relative;margin:0 auto;width:10px;height:84px;border:1px solid rgba(216,204,180,.35);border-radius:5px;overflow:hidden;background:rgba(233,228,214,.04)}
+.tube i{position:absolute;left:2px;right:2px;bottom:2px;border-radius:3px;background:linear-gradient(90deg,#8d989a,#f1f2ee 45%,#7c8688)}
+.tubes .v{font-size:12px;font-family:"IM Fell English",serif;height:1.4em}
+.tubes .w{font-size:10px;color:var(--ink-dim);margin-top:4px;white-space:nowrap}
 
 /* ---------- ダイアログ ---------- */
 .modal{position:fixed;inset:0;z-index:10;display:none;align-items:center;justify-content:center;background:rgba(10,14,12,.7);padding:16px}
@@ -930,62 +963,143 @@ function stopBreath(done){
    ========================================================= */
 function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmt(iso){ const d = new Date(iso); return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}  ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-function entryList(es){
-  return '<ul>' + es.map(e=>`<li><b>${esc(e.body_part)}</b>　${esc(e.sensation_words.join(' → '))}${e.color?`　<span class="muted">${esc(e.color)}</span>`:''}
-    <span class="${e.shift_occurred?'shift':'noshift'}">${e.shift_occurred?'　✦ シフト':'　· 区切り'}</span>
-    ${e.note?`<div class="muted" style="white-space:pre-wrap">${esc(e.note)}</div>`:''}</li>`).join('') + '</ul>';
+// 色名 → 色見本（褪せた色調に寄せる）。知らない色名は名前から決まった褪せ色
+const COLOR_WORDS = [
+  ['赤銅','#9a5b3c'],['黄土','#b08a48'],['金','#b09457'],['銀','#b9bdb8'],['灰','#8a8a84'],['鼠','#8a8a84'],
+  ['藍','#3f4f6e'],['紺','#34405c'],['青','#5f7896'],['水','#8fa9b5'],['緑','#6d8a68'],['苔','#6b7a4e'],['黄','#c7ad5e'],
+  ['橙','#c0804a'],['オレンジ','#c0804a'],['桃','#c49a9a'],['ピンク','#c49a9a'],['紅','#9e4a4a'],['赤','#a65149'],
+  ['茶','#7a5a42'],['紫','#7d6890'],['黒','#2a2a2a'],['白','#e6e1d4'],['透明','rgba(233,228,214,.25)'],
+];
+function colorOf(name){
+  if(!name) return null;
+  const hit = COLOR_WORDS.find(([w])=>name.includes(w)); if(hit) return hit[1];
+  let h = 0; for(const c of name) h = (h*31 + c.charCodeAt(0)) % 360;
+  return `hsl(${h} 22% 55%)`;
 }
+const FLOWER = '<svg class="flower" viewBox="0 0 16 16" aria-label="シフト"><title>シフト</title><circle cx="8" cy="8" r="1.4"/><path d="M8 6.6C6.6 4 7 2 8 1.5 9 2 9.4 4 8 6.6M9.3 7.6c2-2 4-2.3 4.8-1.6-.3 1.1-2.1 2.1-4.8 1.6M8.9 9.2c2.6 1.3 3.4 3.1 3 4-1.1.1-2.6-1.3-3-4M7.1 9.2c-.4 2.7-1.9 4.1-3 4-.4-.9.4-2.7 3-4M6.7 7.6C4 8.1 2.2 7.1 1.9 6 2.7 5.3 4.7 5.6 6.7 7.6"/></svg>';
+const WD = '日月火水木金土';
+function specRows(es){
+  return es.map(e=>{
+    const c = colorOf(e.color);
+    return `<div class="spec"><span class="sw ${c?'':'none'}" ${c?`style="background:${c}"`:''} title="${esc(e.color||'色なし')}"></span>
+      <b>${esc(e.body_part)}</b><span class="wd">${e.sensation_words.map(esc).join('<i>→</i>') || '<span class="muted">言葉なし</span>'}</span>${e.shift_occurred?FLOWER:'<span></span>'}</div>`;
+  }).join('');
+}
+function specDetails(es){
+  return es.map(e=>`<div class="d"><b>${esc(e.body_part)}</b>${e.color?`色：${esc(e.color)}　`:''}問い ${e.asks||0}回　${e.shift_occurred?'シフト':'区切り'}${e.note?`\n${esc(e.note)}`:''}</div>`).join('');
+}
+function entryList(es){ return specRows(es); }
 function renderHistory(){
   const el = document.getElementById('histList');
   if(!store.sessions.length){ el.innerHTML = '<div class="brass panel"><p class="muted">頁はまだ白紙だ。最初の一行は、お前が書きたまえ。</p></div>'; return; }
-  el.innerHTML = store.sessions.map(s=>`<div class="brass log">
-      <button class="del" data-sid="${esc(s.session_id)}">消す</button>
-      <div class="date">${fmt(s.started_at)}${store.pending.includes(s.session_id)?' ・ 送信待ち':''}</div>
-      ${entryList(s.entries)}</div>`).join('');
-  el.querySelectorAll('.del').forEach(b=>b.onclick=()=>deleteSession(b.dataset.sid));
+  let html = '', month = '';
+  const byMonth = {};
+  store.sessions.forEach(s=>{ const d = new Date(s.started_at), k = `${d.getFullYear()}年 ${d.getMonth()+1}月`; byMonth[k] = (byMonth[k]||0)+1; });
+  store.sessions.forEach(s=>{
+    const d = new Date(s.started_at), k = `${d.getFullYear()}年 ${d.getMonth()+1}月`;
+    if(k!==month){ month = k; html += `<h3 class="month">${k}<span>${byMonth[k]}回</span></h3>`; }
+    const sh = s.entries.filter(e=>e.shift_occurred).length;
+    html += `<article class="label" data-sid="${esc(s.session_id)}">
+      <div class="lhead"><span class="ldate">${d.getMonth()+1}.${d.getDate()}<small>（${WD[d.getDay()]}）${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</small></span>
+        <span class="lmeta">${s.entries.length}点${sh?` · シフト${sh}`:''}${store.pending.includes(s.session_id)?' · 送信待ち':''}</span></div>
+      ${specRows(s.entries)}
+      <div class="ldetail">${specDetails(s.entries)}<div class="foot"><span>${fmt(s.started_at)}</span><button class="del">この記録を消す</button></div></div>
+    </article>`;
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.label').forEach(a=>{
+    a.onclick = e=>{ if(e.target.closest('.del')) return; a.classList.toggle('open'); };
+    a.querySelector('.del').onclick = ()=>deleteSession(a.dataset.sid);
+  });
 }
 
 /* =========================================================
-   分析
+   標本棚（分析）
    ========================================================= */
-function bars(pairs, rose){
-  const max = Math.max(1, ...pairs.map(p=>p[1]));
-  return pairs.map(([k,v])=>`<div class="bar"><span class="lbl" title="${esc(k)}">${esc(k)}</span><span class="track"><span class="fill ${rose?'rose':''}" style="width:${v/max*100}%"></span></span><span class="n">${v}</span></div>`).join('');
+// 人体図：正面(front)と背面(back)。部位ごとの位置（左右あるものは2点）
+const SPOTS = {
+  '額':['f',[[60,15]]], '目の奥':['f',[[60,26]]], '顎':['f',[[60,43]]], '喉':['f',[[60,54]]],
+  '肩':['f',[[35,67],[85,67]]], '胸':['f',[[60,80]]], 'みぞおち':['f',[[60,97]]], 'お腹':['f',[[60,119]]],
+  '脇':['f',[[36,86],[84,86]]], '手':['f',[[22,158],[98,158]]], '脚':['f',[[48,205],[72,205]]],
+  '後頭部':['b',[[60,24]]], '首':['b',[[60,52]]], '背中':['b',[[60,88]]], '腰':['b',[[60,128]]],
+};
+const BODY = `<ellipse class="body-line" cx="60" cy="27" rx="15" ry="19"/>
+  <path class="body-line" d="M54 45v12M66 45v12"/>
+  <path class="body-line" d="M54 57C42 59 34 62 31 71L34 110Q36 136 39 146H81Q84 136 86 110L89 71C86 62 78 59 66 57"/>
+  <g><path class="body-line" d="M31 71C25 77 23 96 22 120L19 150M35 88 32 122 28 150"/><ellipse class="body-line" cx="23.5" cy="157" rx="5" ry="7"/></g>
+  <g transform="translate(120 0) scale(-1 1)"><path class="body-line" d="M31 71C25 77 23 96 22 120L19 150M35 88 32 122 28 150"/><ellipse class="body-line" cx="23.5" cy="157" rx="5" ry="7"/></g>
+  <path class="body-line" d="M39 146 42 200 44 250H55L57 200 59 152Q60 149 61 152L63 200 65 250H76L78 200 81 146"/>`;
+function bodyFig(side, counts, max){
+  let spots = '';
+  Object.entries(SPOTS).forEach(([p,[sd,pts]])=>{
+    if(sd!==side) return;
+    const n = counts.get(p)||0, t = n/max;
+    pts.forEach(([x,y])=>{
+      spots += `<g class="spot" data-p="${p}"><circle class="hit" cx="${x}" cy="${y}" r="11"/>`
+        + (n ? `<circle cx="${x}" cy="${y}" r="${6+8*t}" fill="url(#heatG)" opacity="${(.35+.65*t).toFixed(2)}"/><circle class="core" cx="${x}" cy="${y}" r="2.2" fill="#d8c08a"/>`
+             : `<circle class="core" cx="${x}" cy="${y}" r="1.6" fill="none" stroke="rgba(216,204,180,.35)" stroke-width=".7"/>`) + '</g>';
+    });
+  });
+  return `<svg viewBox="0 0 120 256" role="img" aria-label="${side==='f'?'正面':'背面'}の部位図">
+    <defs><radialGradient id="heatG"><stop offset="0" stop-color="#d4b872" stop-opacity=".95"/><stop offset=".6" stop-color="#b09457" stop-opacity=".45"/><stop offset="1" stop-color="#b09457" stop-opacity="0"/></radialGradient></defs>
+    ${BODY}${spots}</svg>`;
 }
-function weekKey(iso){
-  const d = new Date(iso); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay()+6)%7));
-  return `${d.getMonth()+1}/${d.getDate()}〜`;
+function weekStart(d){ d = new Date(d); d.setHours(0,0,0,0); d.setDate(d.getDate() - ((d.getDay()+6)%7)); return d; }
+function kuroyuriNote(es, shifts){
+  const now = Date.now(), day = 864e5;
+  const recent = store.sessions.filter(s=>now - new Date(s.started_at) < 7*day).length;
+  if(!recent) return 'この一週間、温室の扉は閉じたままだった。\n……責めてはいない。気が向いたら来たまえ。';
+  const m = new Map();
+  es.filter(e=>now - new Date(e.at) < 14*day).forEach(e=>m.set(e.body_part,(m.get(e.body_part)||0)+1));
+  const top = [...m].sort((a,b)=>b[1]-a[1])[0];
+  if(top && top[1]>=3) return `最近、${top[0]}ばかり訪れているな。\n……何か、そこに置き忘れているのではないかね。`;
+  const rate = Math.round(shifts.length/es.length*100);
+  if(es.length>=5 && rate>=70) return `シフトの率は${rate}%。\n身体はお前が思うより、ずっと素直に口を開いているようだ。`;
+  return `標本は${es.length}点になった。\n並べてみると、お前の身体の癖が少しずつ見えてくる。`;
 }
 function renderStats(){
   const el = document.getElementById('statsBody');
   const es = store.sessions.flatMap(s=>s.entries.map(e=>({...e, at:s.started_at})));
   if(!es.length){ el.innerHTML = '<div class="brass panel"><p class="muted">標本棚はまだ空だ。幾度か採集を重ねれば、お前の身体の癖が見えてくる。</p></div>'; return; }
-  const count = (arr) => { const m = new Map(); arr.forEach(k=>m.set(k,(m.get(k)||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]); };
+  const count = arr => { const m = new Map(); arr.forEach(k=>m.set(k,(m.get(k)||0)+1)); return m; };
+  const sorted = m => [...m].sort((a,b)=>b[1]-a[1]);
   const shifts = es.filter(e=>e.shift_occurred);
-  // 部位ヒートマップ：出現回数とシフト率
-  const parts = count(es.map(e=>e.body_part)), maxP = parts[0][1];
-  const heat = parts.map(([p,n])=>{
-    const sh = es.filter(e=>e.body_part===p && e.shift_occurred).length, a = .12 + .6*n/maxP;
-    return `<div style="background:rgba(176,148,87,${a.toFixed(2)})"><b>${n}</b>${esc(p)}<br><span class="muted">シフト ${sh}</span></div>`;
-  }).join('');
-  // 週次シフト推移（直近8週）
-  const weeks = new Map();
-  store.sessions.slice().reverse().forEach(s=>{ const k = weekKey(s.started_at); weeks.set(k, (weeks.get(k)||0) + s.entries.filter(e=>e.shift_occurred).length); });
-  const wk = [...weeks].slice(-8);
-  // シフトまでの問いかけ回数
-  const asks = count(shifts.map(e=>`${e.asks||0}回`)).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
   const avg = shifts.length ? (shifts.reduce((a,e)=>a+(e.asks||0),0)/shifts.length).toFixed(1) : '—';
+  // 部位
+  const pc = count(es.map(e=>e.body_part)), maxP = Math.max(...pc.values());
+  const others = sorted(pc).filter(([p])=>!SPOTS[p]);
+  // 言葉
+  const wc = sorted(count(es.flatMap(e=>e.sensation_words))).slice(0,18), maxW = wc.length ? wc[0][1] : 1;
+  const cloud = wc.map(([w,n],i)=>{ const t = n/maxW;
+    return `<span title="${esc(w)}：${n}回" style="font-size:${(12+14*t).toFixed(1)}px;color:${i<3?'var(--brass)':'var(--ink)'};opacity:${(.55+.45*t).toFixed(2)}">${esc(w)}</span>`; })
+    .join('');
+  // 色
+  const cc = sorted(count(es.filter(e=>e.color).map(e=>e.color))).slice(0,10);
+  // 週ごとのシフト（直近8週、空の週も0で表示）
+  const w0 = weekStart(Date.now()), weeks = [];
+  for(let i=7;i>=0;i--){ const d = new Date(w0); d.setDate(d.getDate()-7*i); weeks.push([d,0]); }
+  shifts.forEach(e=>{ const k = weekStart(e.at).getTime(); const w = weeks.find(([d])=>d.getTime()===k); if(w) w[1]++; });
+  const maxWk = Math.max(1, ...weeks.map(w=>w[1]));
   el.innerHTML = `
+    <div class="brass speech"><span class="name">黒百合</span><p>${esc(kuroyuriNote(es, shifts))}</p></div>
     <div class="brass panel"><div class="stat">
-      <div><b>${store.sessions.length}</b><span>採集した回数</span></div>
+      <div><b>${store.sessions.length}</b><span>採集</span></div>
       <div><b>${shifts.length}</b><span>シフト</span></div>
-      <div><b>${avg}</b><span>シフトまでの問い（平均）</span></div>
+      <div><b>${avg}</b><span>問いの平均</span></div>
     </div></div>
-    <div class="brass panel"><h3>部位の標本（濃いほど多く訪れた場所）</h3><div class="heat">${heat}</div></div>
-    <div class="brass panel"><h3>感覚の言葉</h3>${bars(count(es.flatMap(e=>e.sensation_words)).slice(0,12))}</div>
-    ${es.some(e=>e.color) ? `<div class="brass panel"><h3>色</h3>${bars(count(es.filter(e=>e.color).map(e=>e.color)).slice(0,8), true)}</div>` : ''}
-    <div class="brass panel"><h3>週ごとのシフト</h3>${bars(wk)}</div>
-    ${asks.length ? `<div class="brass panel"><h3>シフトまでに問いかけた回数</h3>${bars(asks, true)}</div>` : ''}`;
+    <div class="brass panel"><h3>訪れた場所</h3>
+      <div class="figs"><figure>${bodyFig('f', pc, maxP)}<figcaption>front</figcaption></figure><figure>${bodyFig('b', pc, maxP)}<figcaption>back</figcaption></figure></div>
+      <div class="pinfo" id="pinfo"><span>光っている場所に触れると、詳細が出る</span></div>
+      ${others.length ? `<div class="others">その他：${others.map(([p,n])=>`${esc(p)} ${n}`).join(' · ')}</div>` : ''}
+    </div>
+    ${wc.length ? `<div class="brass panel"><h3>感覚の言葉</h3><div class="cloud">${cloud}</div></div>` : ''}
+    ${cc.length ? `<div class="brass panel"><h3>色</h3><div class="swatches">${cc.map(([c,n])=>`<div><span class="sw" style="background:${colorOf(c)}"></span>${esc(c)}<small>×${n}</small></div>`).join('')}</div></div>` : ''}
+    <div class="brass panel"><h3>週ごとのシフト</h3><div class="tubes">${weeks.map(([d,n])=>`<div title="${d.getMonth()+1}/${d.getDate()}の週：シフト${n}回"><div class="v">${n||''}</div><div class="tube"><i style="height:${n?Math.max(6,n/maxWk*78):0}px"></i></div><div class="w">${d.getMonth()+1}/${d.getDate()}</div></div>`).join('')}</div></div>`;
+  el.querySelectorAll('.spot').forEach(g=>g.onclick=()=>{
+    const p = g.dataset.p, n = pc.get(p)||0, sh = es.filter(e=>e.body_part===p && e.shift_occurred).length;
+    el.querySelectorAll('.spot').forEach(x=>x.classList.toggle('sel', x.dataset.p===p));
+    document.getElementById('pinfo').innerHTML = `<b>${esc(p)}</b><span>${n ? `${n}回 · シフト${sh}` : 'まだ訪れていない'}</span>`;
+  });
 }
 
 /* ---------- 起動 ---------- */
