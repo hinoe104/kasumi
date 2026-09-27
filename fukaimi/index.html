@@ -169,12 +169,12 @@ svg{stroke-linecap:round;stroke-linejoin:round}
 .openstart span{font-size:12px;color:var(--ink-dim);line-height:1.7;display:block}
 .or{display:flex;align-items:center;gap:10px;margin:14px 0 12px;font-size:11px;color:var(--ink-dim);letter-spacing:.12em}
 .or::before,.or::after{content:"";flex:1;height:1px;background:rgba(176,148,87,.25)}
-.pgroup{display:grid;grid-template-columns:3.6em 1fr;align-items:start;gap:10px;padding:8px 0;border-top:1px solid rgba(176,148,87,.12)}
+.pgroup{display:grid;grid-template-columns:3.2em 1fr;align-items:center;gap:8px;padding:5px 0;border-top:1px solid rgba(176,148,87,.12)}
 .pgroup:first-child{border-top:0;padding-top:0}
-.pgroup .g{font-size:11px;color:var(--brass);letter-spacing:.2em;padding-top:7px}
+.pgroup .g{font-size:11px;color:var(--brass);letter-spacing:.2em}
 .pgroup .tags{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .tag{
-  position:relative;padding:7px 2px;font-size:13px;text-align:center;letter-spacing:.06em;
+  position:relative;padding:5px 2px;font-size:13px;text-align:center;letter-spacing:.06em;
   border:1px solid rgba(176,148,87,.28);background:rgba(20,26,22,.35);border-radius:1px;transition:all .2s;
 }
 .tag.sel{border-color:var(--brass);background:rgba(125,106,63,.42);color:#fff}
@@ -200,11 +200,13 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 .counter{font-size:12px;color:var(--ink-dim);font-family:"IM Fell English",serif;font-style:italic}
 .row{display:flex;gap:10px;margin-top:14px}
 .row .btn{flex:1}
-.safety{display:flex;gap:8px;justify-content:center;margin-top:auto;padding-top:10px}
+.safety{display:flex;gap:8px;justify-content:center;margin-top:auto;padding:14px 0 2px;position:sticky;bottom:0;z-index:3;background:linear-gradient(180deg,transparent,rgba(20,26,22,.92) 40%)}
 .safety button{
   font-size:12px;padding:6px 12px;border:1px solid rgba(181,142,138,.5);border-radius:999px;
   color:var(--rose);background:rgba(20,26,22,.6);
 }
+.links{display:flex;justify-content:center;gap:24px;margin-top:12px}
+.links button{font-size:13px;color:var(--ink-dim);border-bottom:1px solid rgba(176,148,87,.4);padding:2px 0}
 .words{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .words .chip{font-size:13px;padding:4px 10px}
 .hint{font-size:12px;color:var(--ink-dim);margin-top:8px}
@@ -541,7 +543,7 @@ function greet(){
   // 黒百合の台詞（外面＝紳士的・硬質・やや古風。一人称「私」、二人称「かすみ／お前」）
   const lines =
       h<4  ? ['……この時刻に灯りを点けるとは。眠れないのかね、かすみ。\n今夜は扉のそばまでにしておきたまえ。合図は常に有効——それを忘れないと約束したまえ。',
-              '夜更けの温室は、音がよく響く。\n身体の声も、必要以上に大きく聞こえる時間だ。今夜は呼吸だけにしておくのも、賢明な選択だよ。',
+              '夜更けの温室は、音がよく響く。\n身体の声も、必要以上に大きく聞こえる時間だ。今夜は呼吸だけにしておくのも、賢明な選択だ。',
               'お前がここへ来た理由を、先に聞かせてもらおうか。\n眠れぬ夜なら、深く分け入るより、水銀の上下を眺めている方がいい。']
     : h<6  ? ['夜明け前か。私の好む時刻だが、お前には少々早すぎる。\n……それとも、まだ眠っていないのかね？',
               '空が白むまで、もう少しある。\n無理に何かを掬い上げる必要はない。ただ息をしていたまえ。']
@@ -559,7 +561,7 @@ function greet(){
               '湯は済ませたかね。\n身体が温まっている今なら、硬いものも少しは緩みやすい。',
               '今日は、誰かに何かを言われたのではないか。\n……顔を見ればわかる。話したくなったら、話せばいい。']
     :        ['そろそろ休む支度をする時刻だ。\n採集するなら一株だけにしておきたまえ。それ以上は、私が止める。',
-              '夜の温室は冷える。\n呼吸を整えて、そのまま眠ってしまっても一向に構わないよ。'];
+              '夜の温室は冷える。\n呼吸を整えて、そのまま眠ってしまっても一向に構わない。……むしろ、そうしたまえ。'];
   const el = document.getElementById('greet');
   let t; do{ t = lines[Math.floor(Math.random()*lines.length)]; }while(lines.length>1 && t===el.textContent);
   el.textContent = t;
@@ -628,18 +630,18 @@ function nextPart(){
   renderStep();
 }
 function hasNext(){ return S.open ? S.entries.length < MAX_PARTS : S.idx < S.parts.length; }
-const SCAN_LINE = '急がなくていい。頭のてっぺんから、ゆっくり下へ——\n額、目の奥、顎。喉、肩。胸、みぞおち、お腹。背中、腰、手足……\n意識がどこかで引っかかったら、そこだ。わからなければ、それもまた答えだよ。';
-const SCAN_AGAIN = 'もう一度、全身をなぞってみたまえ。\nさっきとは別のところで、何かが声を上げていないか。';
+const SCAN_LINE = '頭から足先へ、ゆっくりなぞりたまえ。\n意識が引っかかった場所があれば、そこだ。\nわからないなら、それで構わない。わかったふりをされるより、よほどいい。';
+const SCAN_AGAIN = 'もう一度、全身をなぞってみたまえ。\n先ほどとは別のところで、何かが声を上げてはいないかね。';
 function pickFound(p){
   S.cur.body_part = p; S.step = 0; renderStep();
 }
 const STEP_LINES = [
   p => `${p}に、意識をそっと置きたまえ。\n変えようとしなくていい。温度、重さ、質感——ただ、そこに在るものに気づくだけだ。`,
   p => `では、その感じに名を与えてみよう。\n音でも色でも構わない。突飛な言葉ほど正確だというのは、私の経験則でもある。`,
-  p => `その感じに、直接たずねてみたまえ。\n——「お前は、何を求めている？」\n答えを探しに行くな。向こうから返ってくるのを待つんだ。`,
+  p => `その感じに、直接たずねてみたまえ。\n——「お前は、何を求めている？」\n答えを探しに行くな。向こうから返ってくるのを、待ちたまえ。`,
   p => `……さて、どうだね。\n緩んだ、軽くなった、形が変わった——何か動いた気配はあるかね？`,
 ];
-const ASKS = ['お前は、何を求めている？','いま、どんな状態？','何がそんなに、そうさせている？','いちばん悪いところは、どこ？','どうなったら、楽になる？'];
+const ASKS = ['お前は、何を求めている？','今、どんな具合だ？','何が、お前をそうさせている？','一番こたえているのは、どこだ？','どうなれば、楽になる？'];
 
 function renderStep(){
   const c = S.cur, p = c.body_part;
@@ -680,13 +682,13 @@ function renderStep(){
   }
 }
 function renderScan(){
-  document.getElementById('sPart').textContent = '……';
+  document.getElementById('sPart').textContent = '全身をなぞる';
   document.querySelectorAll('#sSteps span').forEach(s=>s.classList.remove('on'));
   document.getElementById('sLine').textContent = S.entries.length ? SCAN_AGAIN : SCAN_LINE;
   const b = document.getElementById('sBody');
   b.innerHTML = `<h3>引っかかった場所</h3><div id="scanTags">${partTags([], false)}</div>
     <div class="addrow"><input class="field" id="scanInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" id="scanAdd">そこだ</button></div>
-    <div class="row"><button class="btn ghost" onclick="pickFound('名のない場所')">場所は言えない</button>${S.entries.length?'<button class="btn" onclick="finish(\'rest\')">今日はここまで</button>':''}</div>`;
+    <div class="links"><button onclick="pickFound('名のない場所')">場所は言えない</button>${S.entries.length?'<button onclick="finish(\'rest\')">今日はここまで</button>':''}</div>`;
   b.querySelectorAll('.tag').forEach(t=>t.onclick=()=>pickFound(t.dataset.p));
   const inp = document.getElementById('scanInput');
   const add = ()=>{ const v = inp.value.trim(); if(v) pickFound(v); };
@@ -745,7 +747,7 @@ function shallow(){
   if(hasNext() && S.entries.length){
     nextPart();
     document.getElementById('sLine').textContent = '扉のそばまで戻った。まずは呼吸をひとつ。\n'
-      + (S.open ? '続けるなら別の場所を探せばいい' : '続けるなら次は' + S.cur.body_part) + 'が——やめたいなら「外へ出る」と言いたまえ。咎めはしない。';
+      + (S.open ? '続けるなら、別の場所を探せばいい。' : '続けるなら、次は' + S.cur.body_part + 'だ。') + '\nやめたいなら「外へ出る」と言いたまえ。咎めはしない。';
   } else finish('shallow');
 }
 function toBeach(){
@@ -764,10 +766,10 @@ async function finish(kind){
   S.ended_at = new Date().toISOString();
   const rec = {session_id:S.session_id, started_at:S.started_at, ended_at:S.ended_at, entries:S.entries};
   const lines = {
-    shift:'よく採ってきた、かすみ。確かに動いたね。\n溜まっていたものは、もう外に出ている。今はそのまま、緩んでいたまえ。',
+    shift:'よく採ってきた、かすみ。確かに動いたな。\n溜まっていたものは、もう外に出ている。今はそのまま、緩んでいたまえ。',
     rest:'ご苦労だった。\n動かない日があるのは、身体がお前を守っている証拠だ。恥じることは何もない。',
-    shallow:'よく戻ってきた。\n水を一杯飲んできたまえ。……いや、私が持ってこよう。そこに座っていろ。',
-    beach:'外の空気だ。ここはもう安全だよ。\n足の裏で床の感触を確かめたまえ。……そう。おかえり、かすみ。',
+    shallow:'よく戻ってきた。\n水を一杯飲んできたまえ。……いや、私が持ってこよう。そこに座っていたまえ。',
+    beach:'外の空気だ。ここはもう安全だ。\n足の裏で床の感触を確かめたまえ。……そう。おかえり、かすみ。',
   };
   document.getElementById('doneLine').textContent = lines[kind];
   document.getElementById('doneSummary').innerHTML = S.entries.length
