@@ -9,19 +9,6 @@
 </defs>
 <style>.st{fill:none;stroke:#b09457;stroke-width:1.2;stroke-linecap:round}.lf{fill:url(#goldG);stroke:#e0cc95;stroke-opacity:.5;stroke-width:.4}</style>
 <rect width="1024" height="1024" fill="url(#bg)"/>
-<circle cx="512" cy="560" r="330" fill="url(#glow)"/>
-<!-- 硝子の釣鐘（クロッシュ） -->
-<path d="M292 790V470C292 330 390 228 512 228S732 330 732 470V790Z" fill="url(#glass)" stroke="#e9e1cf" stroke-opacity=".55" stroke-width="7"/>
-<path d="M340 760V480C340 380 400 300 470 276" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="10" stroke-linecap="round"/>
-<!-- つまみ -->
-<circle cx="512" cy="200" r="26" fill="url(#brassV)"/>
-<rect x="498" y="214" width="28" height="22" rx="4" fill="url(#brassV)"/>
-<!-- シダ2本（交差） -->
-<use href="#frond" transform="translate(524 772) rotate(60) scale(-1.7 1.7) translate(-8 -40)"/>
-<use href="#frond" transform="translate(500 772) rotate(-60) scale(1.7) translate(-8 -40)"/>
-<g fill="#b58e8a" fill-opacity=".92" stroke="#ecd9cf" stroke-opacity=".5" stroke-width="2"><ellipse cx="512" cy="712" rx="15" ry="24" transform="rotate(0 512 738)"/><ellipse cx="512" cy="712" rx="15" ry="24" transform="rotate(72 512 738)"/><ellipse cx="512" cy="712" rx="15" ry="24" transform="rotate(144 512 738)"/><ellipse cx="512" cy="712" rx="15" ry="24" transform="rotate(216 512 738)"/><ellipse cx="512" cy="712" rx="15" ry="24" transform="rotate(288 512 738)"/></g><circle cx="512" cy="738" r="10" fill="url(#brassV)"/>
-<!-- 台座 -->
-<rect x="250" y="786" width="524" height="34" rx="6" fill="url(#brassV)"/>
-<rect x="222" y="818" width="580" height="44" rx="8" fill="url(#brassV)"/>
-<rect x="222" y="818" width="580" height="6" fill="#f0dfae" opacity=".45"/>
+<circle cx="512" cy="512" r="420" fill="url(#glow)"/>
+<use href="#frond" transform="translate(262 802) rotate(-46) scale(3.3) translate(-8 -40)"/>
 </svg>
