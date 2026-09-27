@@ -643,7 +643,7 @@ function nextPart(){
   if(S.step===-2){ S.rounds = 0; S.page = 0; }
   renderStep();
 }
-function hasNext(){ return S.open ? S.entries.length < MAX_PARTS : S.idx < S.parts.length; }
+function hasNext(){ return !S.open && S.idx < S.parts.length; }
 const INTRO = [
   'わからない、か。……正直でよろしい。\nわからないまま来たのなら、まずは身体を静かにするところからだ。',
   'これから3分、呼吸を整える。\n音が鳴ったら吸い、次の音で吐く。水銀の上下を目で追うだけでいい。',
@@ -670,12 +670,8 @@ function renderIntro(){
 }
 // 呼吸中の合図：呼吸を止めてセッション画面に戻してから、合図の処理へ
 function breathExit(fn){ stopBreath(); go('session'); renderStep(); fn(); }
-function retryBreath(){ S.step = -2; S.page = 0; renderStep(); }
+function retryBreath(){ S.step = -2; S.page = 0; S.found = []; renderStep(); }
 const SCAN_LINE = '頭から足先へ、ゆっくりなぞりたまえ。\n意識が引っかかった場所があれば、そこだ。\nわからないなら、それで構わない。わかったふりをされるより、よほどいい。';
-const SCAN_AGAIN = 'もう一度、全身をなぞってみたまえ。\n先ほどとは別のところで、何かが声を上げてはいないかね。';
-function pickFound(p){
-  S.cur.body_part = p; S.step = 0; renderStep();
-}
 const STEP_LINES = [
   p => `${p}に、意識をそっと置きたまえ。\n変えようとしなくていい。温度、重さ、質感——ただ、そこに在るものに気づくだけだ。`,
   p => `では、その感じに名を与えてみよう。\n音でも色でも構わない。突飛な言葉ほど正確だというのは、私の経験則でもある。`,
@@ -686,7 +682,7 @@ const ASKS = ['お前は、何を求めている？','今、どんな具合だ�
 
 function renderStep(){
   const c = S.cur, p = c.body_part;
-  document.getElementById('sCounter').textContent = S.open ? `${S.entries.length+1} / ${MAX_PARTS}` : `${S.idx+1} / ${S.parts.length}`;
+  document.getElementById('sCounter').textContent = `${S.idx+1} / ${S.parts.length}`;
   if(S.step===-2) return renderIntro();
   if(S.step<0) return renderScan();
   document.getElementById('sPart').textContent = p;
@@ -723,19 +719,26 @@ function renderStep(){
       </div>`;
   }
 }
+// 全身をなぞって見つけた場所を、通常と同じく最大3つまで選ぶ。決めたら通常の流れへ合流
 function renderScan(){
   document.getElementById('sPart').textContent = '全身をなぞる';
+  document.getElementById('sCounter').textContent = '';
   document.querySelectorAll('#sSteps span').forEach(s=>s.classList.remove('on'));
-  document.getElementById('sLine').textContent = S.entries.length ? SCAN_AGAIN : S.rounds>=2 ? QUIET_DAY : S.rounds ? AFTER_BREATH : SCAN_LINE;
-  const b = document.getElementById('sBody');
-  b.innerHTML = `<h3>引っかかった場所</h3><div id="scanTags">${partTags([], false)}</div>
-    <div class="addrow"><input class="field" id="scanInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" id="scanAdd">そこだ</button></div>
+  document.getElementById('sLine').textContent = S.rounds>=2 ? QUIET_DAY : S.rounds ? AFTER_BREATH : SCAN_LINE;
+  S.found = S.found || [];
+  const f = S.found, b = document.getElementById('sBody');
+  b.innerHTML = `<h3>引っかかった場所</h3><div id="scanTags">${partTags(f, true)}</div>
+    <div class="addrow"><input class="field" id="scanInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" id="scanAdd">加える</button></div>
+    <p class="hint">${f.length ? `${f.map(esc).join(' → ')}（${f.length}/${MAX_PARTS}）` : `多くても${MAX_PARTS}つまで。選んだ順にたどる。`}</p>
+    <button class="btn primary" style="width:100%;margin-top:10px" id="scanGo" ${f.length?'':'disabled'}>この順にたどる</button>
     <div class="links"><button onclick="retryBreath()">まだ、わからない</button><button onclick="finish('rest')">今日はここまで</button></div>`;
-  b.querySelectorAll('.tag').forEach(t=>t.onclick=()=>pickFound(t.dataset.p));
+  const toggle = p => { const i = f.indexOf(p); if(i>=0) f.splice(i,1); else if(f.length<MAX_PARTS) f.push(p); renderScan(); };
+  b.querySelectorAll('.tag').forEach(t=>t.onclick=()=>toggle(t.dataset.p));
   const inp = document.getElementById('scanInput');
-  const add = ()=>{ const v = inp.value.trim(); if(v) pickFound(v); };
+  const add = ()=>{ const v = inp.value.trim(); if(v && !f.includes(v)) toggle(v); };
   document.getElementById('scanAdd').onclick = add;
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.isComposing) add(); });
+  document.getElementById('scanGo').onclick = ()=>{ S.open = false; S.parts = [...f]; S.idx = 0; nextPart(); };
 }
 function saveFields(){
   const c = S.cur; const g = id => document.getElementById(id);
@@ -777,8 +780,7 @@ function shift(yes){
   if(hasNext()){
     nextPart();
     const head = yes ? 'よろしい。動いたなら、そこで区切る。\n' : '深追いはしない。それでいい。\n';
-    document.getElementById('sLine').textContent = S.open ? head + SCAN_AGAIN.split('\n')[1]
-      : head + `次は——${S.cur.body_part}。` + '\n' + STEP_LINES[0](S.cur.body_part).split('\n')[1];
+    document.getElementById('sLine').textContent = head + `次は——${S.cur.body_part}。` + '\n' + STEP_LINES[0](S.cur.body_part).split('\n')[1];
   } else finish(yes ? 'shift' : 'rest');
 }
 function shallow(){
@@ -789,7 +791,7 @@ function shallow(){
   if(hasNext() && S.entries.length){
     nextPart();
     document.getElementById('sLine').textContent = '扉のそばまで戻った。まずは呼吸をひとつ。\n'
-      + (S.open ? '続けるなら、別の場所を探せばいい。' : '続けるなら、次は' + S.cur.body_part + 'だ。') + '\nやめたいなら「外へ出る」と言いたまえ。咎めはしない。';
+      + '続けるなら、次は' + S.cur.body_part + 'だ。' + '\nやめたいなら「外へ出る」と言いたまえ。咎めはしない。';
   } else finish('shallow');
 }
 function toBeach(){
