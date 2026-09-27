@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>深海潜り</title>
+<link rel="preload" as="image" href="img/kuroyuri_metoji.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
@@ -41,6 +42,9 @@ input,textarea{font:inherit;color:var(--ink)}
   filter:saturate(.72) sepia(.14) contrast(.96);
   transition:filter 1.2s ease;
 }
+/* 目閉じ：横長寄り(4:5)なので顔（横58%・縦28%付近）を軸にトリミング */
+.bg.closed{background-image:url("img/kuroyuri_metoji.webp");background-position:58% 22%}
+@media (min-aspect-ratio:4/5){.bg.closed{background-position:58% 30%}}
 .bg.dim{filter:saturate(.5) sepia(.25) brightness(.42) blur(2px)}
 .grain{
   position:fixed;inset:0;z-index:1;pointer-events:none;
@@ -451,7 +455,9 @@ async function saveSettings(){
    ========================================================= */
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
-  document.getElementById('bg').classList.toggle('dim', !['title','main','done'].includes(id));
+  const bg = document.getElementById('bg');
+  bg.classList.toggle('dim', !['title','main','done'].includes(id));
+  bg.classList.toggle('closed', id==='done');
   if(id==='main') greet();
 }
 function greet(){
