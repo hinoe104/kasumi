@@ -195,14 +195,26 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 .hint{font-size:12px;color:var(--ink-dim);margin-top:8px}
 
 /* ---------- 呼吸（水銀柱） ---------- */
-.thermo-wrap{display:flex;gap:18px;align-items:center;justify-content:center;padding:6px 0}
-.thermo svg{display:block;height:min(52vh,380px);width:auto}
-#mercury{transition:none}
-.breath-label{font-size:26px;letter-spacing:.3em;min-width:5em;text-align:center}
-.breath-sub{font-size:12px;color:var(--ink-dim);text-align:center}
-.seg{display:flex;border:1px solid var(--brass-dim);border-radius:2px;overflow:hidden}
-.seg button{flex:1;padding:8px 4px;font-size:13px}
-.seg button.on{background:rgba(125,106,63,.55)}
+.bwrap{display:flex;flex-direction:column;flex:1;align-items:center}
+.bwrap .head{width:100%}
+.bstage{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:0}
+.thermo{height:min(56vh,420px);width:auto;display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+.bread{width:8.5em;text-align:left}
+.ben{font-family:"IM Fell English",serif;font-style:italic;font-size:14px;color:var(--brass);letter-spacing:.15em;height:1.4em}
+.breath-label{font-size:34px;letter-spacing:.3em;font-weight:500;line-height:1.3;transition:opacity .6s}
+.breath-sub{font-size:12px;color:var(--ink-dim);margin-top:6px;font-variant-numeric:tabular-nums}
+.bprog{width:min(240px,70%);height:1px;background:rgba(176,148,87,.2);margin:10px 0 18px}
+.bprog span{display:block;height:100%;width:0;background:var(--brass)}
+.bctrl{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;transition:opacity .6s}
+.bctrl.quiet{opacity:.2;pointer-events:none}
+.opt{display:flex;align-items:center}
+.opt button{font-size:13px;color:var(--ink-dim);padding:4px 7px;border-bottom:1px solid transparent;letter-spacing:.08em}
+.opt button.on{color:var(--ink);border-bottom-color:var(--brass)}
+.opt+.opt::before{content:"·";color:var(--brass-dim);margin-right:10px}
+.orb{align-self:center;margin:22px 0 4px;width:84px;height:84px}
+.orb b{font-size:14px;letter-spacing:.15em}
+#bStart.running{background:radial-gradient(circle at 35% 30%,rgba(62,79,67,.95),rgba(20,26,22,.95))}
+#bStart.running .ring{animation:none;opacity:0}
 
 /* ---------- 履歴 ---------- */
 .log{padding:14px 16px;margin-bottom:10px}
@@ -310,54 +322,55 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 
 <!-- 呼吸 -->
 <section class="screen" id="breath">
-  <div class="wrap">
+  <div class="wrap bwrap">
     <div class="head"><h2>呼吸</h2><button class="back" onclick="stopBreath();go('main')">← 戻る</button></div>
-    <div class="brass panel">
-      <div class="thermo-wrap">
-        <div class="thermo">
-          <svg viewBox="0 0 80 320" aria-label="温度計">
-            <defs>
-              <linearGradient id="glassG" x1="0" x2="1">
-                <stop offset="0" stop-color="#e9e4d6" stop-opacity=".10"/>
-                <stop offset=".35" stop-color="#e9e4d6" stop-opacity=".28"/>
-                <stop offset="1" stop-color="#e9e4d6" stop-opacity=".06"/>
-              </linearGradient>
-              <linearGradient id="hgG" x1="0" x2="1">
-                <stop offset="0" stop-color="#7a8a8e"/><stop offset=".45" stop-color="#e2e6e4"/><stop offset="1" stop-color="#6f7b7d"/>
-              </linearGradient>
-            </defs>
-            <!-- 真鍮の目盛板 -->
-            <rect x="8" y="6" width="64" height="300" rx="4" fill="#2a2a1f" stroke="#7d6a3f"/>
-            <g stroke="#b09457" stroke-width="1" id="ticks"></g>
-            <!-- ガラス管 -->
-            <rect x="33" y="22" width="14" height="238" rx="7" fill="url(#glassG)" stroke="#d8ccb4" stroke-opacity=".5"/>
-            <!-- 水銀 -->
-            <rect id="mercury" x="37" y="250" width="6" height="20" rx="3" fill="url(#hgG)"/>
-            <circle cx="40" cy="278" r="15" fill="url(#hgG)" stroke="#d8ccb4" stroke-opacity=".5"/>
-            <circle cx="35" cy="273" r="4" fill="#fff" opacity=".35"/>
-          </svg>
-        </div>
-        <div>
-          <div class="breath-label" id="bLabel">―</div>
-          <div class="breath-sub" id="bSub">準備ができたら</div>
-        </div>
+    <div class="bstage">
+      <svg class="thermo" viewBox="0 0 120 450" aria-label="温度計">
+        <defs>
+          <linearGradient id="glassG" x1="0" x2="1">
+            <stop offset="0" stop-color="#e9e4d6" stop-opacity=".04"/>
+            <stop offset=".3" stop-color="#e9e4d6" stop-opacity=".16"/>
+            <stop offset=".55" stop-color="#e9e4d6" stop-opacity=".03"/>
+            <stop offset="1" stop-color="#e9e4d6" stop-opacity=".08"/>
+          </linearGradient>
+          <linearGradient id="hgG" x1="0" x2="1">
+            <stop offset="0" stop-color="#8d989a"/><stop offset=".4" stop-color="#f1f2ee"/><stop offset="1" stop-color="#7c8688"/>
+          </linearGradient>
+          <radialGradient id="bulbG" cx=".38" cy=".35" r=".7">
+            <stop offset="0" stop-color="#fbfbf8"/><stop offset=".45" stop-color="#b9c0bf"/><stop offset="1" stop-color="#5e686a"/>
+          </radialGradient>
+          <radialGradient id="glowG"><stop offset="0" stop-color="#e9e0c8" stop-opacity=".55"/><stop offset="1" stop-color="#e9e0c8" stop-opacity="0"/></radialGradient>
+        </defs>
+        <!-- 真鍮の吊り金具 -->
+        <circle cx="60" cy="14" r="6" fill="none" stroke="#b09457" stroke-width="1"/>
+        <path d="M54 30h12l-2-10h-8z" fill="#7d6a3f" stroke="#b09457" stroke-width=".8"/>
+        <!-- 目盛 -->
+        <g id="ticks" stroke="#b09457" stroke-width=".7" fill="#b4ab98"></g>
+        <!-- ガラス管 -->
+        <rect x="53" y="30" width="14" height="364" rx="7" fill="url(#glassG)" stroke="#d8ccb4" stroke-opacity=".35" stroke-width=".8"/>
+        <!-- 水銀 -->
+        <circle id="hgGlow" cx="60" cy="372" r="16" fill="url(#glowG)"/>
+        <rect id="mercury" x="57.5" y="372" width="5" height="30" rx="2.5" fill="url(#hgG)"/>
+        <circle cx="60" cy="410" r="15" fill="url(#bulbG)" stroke="#d8ccb4" stroke-opacity=".4" stroke-width=".8"/>
+        <line x1="56" y1="40" x2="56" y2="386" stroke="#fff" stroke-opacity=".18" stroke-width="1.2"/>
+      </svg>
+      <div class="bread">
+        <div class="ben" id="bEn">breathe</div>
+        <div class="breath-label" id="bLabel">呼吸</div>
+        <div class="breath-sub" id="bSub">支度ができたら</div>
       </div>
     </div>
-    <div class="brass panel">
-      <h3>拍子</h3>
-      <div class="seg" id="bPattern">
-        <button data-p="4,0,6,0" class="on">4–6</button>
-        <button data-p="4,4,4,4">箱 4–4–4–4</button>
-        <button data-p="4,7,8,0">4–7–8</button>
+    <div class="bprog"><span id="bProg"></span></div>
+    <div class="bctrl" id="bCtrl">
+      <div class="opt" id="bPattern">
+        <button data-p="4,0,6,0" class="on">4–6</button><button data-p="4,4,4,4">箱</button><button data-p="4,7,8,0">4–7–8</button>
       </div>
-      <div class="row">
-        <div class="seg" id="bLen" style="flex:1">
-          <button data-m="3">3分</button><button data-m="5" class="on">5分</button><button data-m="10">10分</button>
-        </div>
-        <button class="btn ghost" id="bSound" onclick="toggleSound()" style="flex:none;padding:8px 14px">音 あり</button>
+      <div class="opt" id="bLen">
+        <button data-m="3">三分</button><button data-m="5" class="on">五分</button><button data-m="10">十分</button>
       </div>
-      <button class="btn primary" style="width:100%;margin-top:14px" id="bStart" onclick="toggleBreath()">はじめる</button>
+      <div class="opt"><button id="bSound" onclick="toggleSound()"></button></div>
     </div>
+    <button class="dive orb" id="bStart" onclick="toggleBreath()"><span class="ring"></span><b id="bStartTxt">はじめる</b></button>
   </div>
 </section>
 
@@ -709,13 +722,19 @@ async function finish(kind){
    呼吸法：水銀柱＋メトロノーム
    ========================================================= */
 (function drawTicks(){
+  // 右に目盛と華氏風の数字、左は細い副目盛だけ
   const g = document.getElementById('ticks'); let h='';
-  for(let i=0;i<=20;i++){ const y = 250 - i*11; h += `<line x1="${i%5?22:16}" y1="${y}" x2="30" y2="${y}"/><line x1="50" y1="${y}" x2="${i%5?58:64}" y2="${y}"/>`; }
+  for(let i=0;i<=40;i++){
+    const y = 372 - i*8, major = i%10===0, mid = i%5===0;
+    h += `<line x1="70" y1="${y}" x2="${major?84:mid?80:75}" y2="${y}" stroke-opacity="${major?1:.6}"/>`;
+    if(mid) h += `<line x1="44" y1="${y}" x2="50" y2="${y}" stroke-opacity=".45"/>`;
+    if(major) h += `<text x="89" y="${y+3.5}" font-size="10" font-family="IM Fell English,serif" font-style="italic" stroke="none">${50+i}</text>`;
+  }
   g.innerHTML = h;
 })();
 let bState = {run:false, raf:0, t0:0, pat:[4,0,6,0], min:5, sound:lsGet(K.sound,true)};
 let actx = null;
-const PHASES = [['吸う','ゆっくり'],['止める','そのまま'],['吐く','細く長く'],['止める','空のまま']];
+const PHASES = [['吸う','ゆっくり','inhale'],['留める','そのまま','hold'],['吐く','細く、長く','exhale'],['留める','空のまま','rest']];
 function segInit(id, cb){
   document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{
     document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('on', x===b)); cb(b);
@@ -723,7 +742,7 @@ function segInit(id, cb){
 }
 segInit('bPattern', b=>bState.pat = b.dataset.p.split(',').map(Number));
 segInit('bLen', b=>bState.min = +b.dataset.m);
-function renderSoundBtn(){ document.getElementById('bSound').textContent = bState.sound ? '音 あり' : '音 なし'; }
+function renderSoundBtn(){ const b = document.getElementById('bSound'); b.textContent = bState.sound ? '音 ◉' : '音 ○'; b.classList.toggle('on', bState.sound); }
 function toggleSound(){ bState.sound = !bState.sound; lsSet(K.sound, bState.sound); renderSoundBtn(); }
 renderSoundBtn();
 function tick(accent){
@@ -737,14 +756,17 @@ function tick(accent){
   }catch(e){}
 }
 function setMercury(f){ // 0..1
-  const top = 250 - f*220, el = document.getElementById('mercury');
-  el.setAttribute('y', top); el.setAttribute('height', 270-top);
+  const top = 372 - f*320, el = document.getElementById('mercury');
+  el.setAttribute('y', top); el.setAttribute('height', 402-top);
+  document.getElementById('hgGlow').setAttribute('cy', top);
 }
 function toggleBreath(){ bState.run ? stopBreath() : startBreath(); }
 function startBreath(){
   if(actx && actx.state==='suspended') actx.resume();
   bState.run = true; bState.t0 = performance.now(); bState.lastSec = -1; bState.lastPhase = -1;
-  document.getElementById('bStart').textContent = 'やめる';
+  document.getElementById('bStartTxt').textContent = 'やめる';
+  document.getElementById('bStart').classList.add('running');
+  document.getElementById('bCtrl').classList.add('quiet');
   const loop = now => {
     if(!bState.run) return;
     const el = (now - bState.t0)/1000, total = bState.min*60;
@@ -757,16 +779,22 @@ function startBreath(){
     if(ph !== bState.lastPhase){ tick(true); bState.lastPhase = ph; bState.lastSec = Math.floor(el); }
     else if(Math.floor(el) !== bState.lastSec){ tick(false); bState.lastSec = Math.floor(el); }
     document.getElementById('bLabel').textContent = PHASES[ph][0];
-    document.getElementById('bSub').textContent = `${PHASES[ph][1]} ・ ${Math.ceil(pat[ph]-t)}　残り ${Math.ceil((total-el)/60)}分`;
+    document.getElementById('bEn').textContent = PHASES[ph][2];
+    document.getElementById('bSub').textContent = `${PHASES[ph][1]}　${Math.ceil(pat[ph]-t)}`;
+    document.getElementById('bProg').style.width = (el/total*100) + '%';
     bState.raf = requestAnimationFrame(loop);
   };
   bState.raf = requestAnimationFrame(loop);
 }
 function stopBreath(done){
   bState.run = false; cancelAnimationFrame(bState.raf);
-  document.getElementById('bStart').textContent = 'はじめる';
-  document.getElementById('bLabel').textContent = done ? '了' : '―';
-  document.getElementById('bSub').textContent = done ? '水銀は静かに落ち着いた。……上出来だ' : '準備ができたら';
+  document.getElementById('bStartTxt').textContent = 'はじめる';
+  document.getElementById('bStart').classList.remove('running');
+  document.getElementById('bCtrl').classList.remove('quiet');
+  document.getElementById('bLabel').textContent = done ? '了' : '呼吸';
+  document.getElementById('bEn').textContent = done ? 'fin.' : 'breathe';
+  document.getElementById('bSub').textContent = done ? '水銀は静かに落ち着いた。……上出来だ' : '支度ができたら';
+  document.getElementById('bProg').style.width = done ? '100%' : '0';
   setMercury(0);
 }
 
