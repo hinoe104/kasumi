@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>深海潜り</title>
+<title>感覚標本室</title>
 <link rel="preload" as="image" href="img/kuroyuri_metoji.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,7 +71,7 @@ input,textarea{font:inherit;color:var(--ink)}
   text-shadow:0 2px 18px rgba(0,0,0,.7);
   margin-bottom:4px;padding-left:.25em;
 }
-#title .en{font-family:"IM Fell English",serif;font-style:italic;color:var(--sepia);letter-spacing:.2em;opacity:.9}
+#title .en{font-size:clamp(11px,3.4vw,15px);white-space:nowrap;font-family:"IM Fell English",serif;font-style:italic;color:var(--sepia);letter-spacing:.2em;opacity:.9}
 #title .tap{margin:40px 0 28px;font-size:14px;color:var(--ink-dim);animation:blink 2.4s ease-in-out infinite}
 @keyframes blink{50%{opacity:.25}}
 
@@ -145,7 +145,7 @@ svg{stroke-linecap:round;stroke-linejoin:round}
   border:1px solid var(--brass);
   box-shadow:inset 0 0 0 4px rgba(20,26,22,.6),inset 0 0 0 5px rgba(216,204,180,.35),0 6px 18px rgba(0,0,0,.6);
 }
-.dive b{font-size:20px;letter-spacing:.2em;padding-left:.2em}
+.dive b{font-size:17px;letter-spacing:.08em;white-space:nowrap}
 .dive small{font-family:"IM Fell English",serif;font-style:italic;font-size:10px;color:var(--sepia)}
 .dive .ring{position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(176,148,87,.5);animation:pulse 3.2s ease-in-out infinite}
 @keyframes pulse{50%{inset:-12px;opacity:.15}}
@@ -240,7 +240,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 
 <!-- タイトル -->
 <section class="screen on" id="title" onclick="go('main')">
-  <h1>深海潜り</h1>
+  <h1>感覚標本室</h1>
   <div class="en">— a conservatory of quiet senses —</div>
   <div class="tap">画面に触れて、はじめる</div>
 </section>
@@ -249,7 +249,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
 <section class="screen" id="main">
   <!-- 上部バー -->
   <header class="hud">
-    <div class="plate">深海潜り<span id="syncDot" class="dot"></span></div>
+    <div class="plate">感覚標本室<span id="syncDot" class="dot"></span></div>
     <button class="gear" onclick="openSettings()" aria-label="設定">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/></svg>
     </button>
@@ -261,7 +261,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
     <button class="medal" onclick="renderStats();go('stats')"><svg viewBox="0 0 24 24"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 11c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-2.5 0-4-1.5-4-4 2.5 0 4 1.5 4 4z"/></svg><span>標本棚</span></button>
   </nav>
   <div class="dock">
-    <button class="dive" onclick="startSelect()"><span class="ring"></span><b>潜る</b><small>Focusing</small></button>
+    <button class="dive" onclick="startSelect()"><span class="ring"></span><b>採集する</b><small>Focusing</small></button>
     <div class="brass speech" onclick="greet()"><span class="name">黒百合</span><p id="greet"></p><span class="next">▼</span></div>
     <div class="sync" id="syncState"></div>
   </div>
@@ -278,7 +278,7 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
       <div class="addrow"><input class="field" id="partInput" placeholder="ほかの場所（例：左の耳元）" maxlength="20"><button class="btn ghost" onclick="addPart()">加える</button></div>
       <p class="hint" id="selCount"></p>
     </div>
-    <button class="btn primary" style="width:100%" id="beginBtn" onclick="beginSession()" disabled>潜りはじめる</button>
+    <button class="btn primary" style="width:100%" id="beginBtn" onclick="beginSession()" disabled>採集をはじめる</button>
   </div>
 </section>
 
@@ -290,8 +290,8 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
     <div class="brass speech"><span class="name">黒百合</span><p id="sLine"></p></div>
     <div class="brass panel" id="sBody"></div>
     <div class="safety">
-      <button onclick="shallow()">浅瀬へ</button>
-      <button onclick="toBeach()">ビーチへ</button>
+      <button onclick="shallow()">扉のそばへ</button>
+      <button onclick="toBeach()">外へ出る</button>
     </div>
   </div>
 </section>
@@ -509,25 +509,25 @@ function greet(){
   const h = new Date().getHours();
   // 黒百合の台詞（外面＝紳士的・硬質・やや古風。一人称「私」、二人称「かすみ／お前」）
   const lines =
-      h<4  ? ['……この時刻に灯りを点けるとは。眠れないのかね、かすみ。\n潜るなら浅瀬までだ。合図は常に有効——それを忘れないと約束したまえ。',
+      h<4  ? ['……この時刻に灯りを点けるとは。眠れないのかね、かすみ。\n今夜は扉のそばまでにしておきたまえ。合図は常に有効——それを忘れないと約束したまえ。',
               '夜更けの温室は、音がよく響く。\n身体の声も、必要以上に大きく聞こえる時間だ。今夜は呼吸だけにしておくのも、賢明な選択だよ。',
-              'お前がここへ来た理由を、先に聞かせてもらおうか。\n眠れぬ夜なら、深く潜るより、水銀の上下を眺めている方がいい。']
+              'お前がここへ来た理由を、先に聞かせてもらおうか。\n眠れぬ夜なら、深く分け入るより、水銀の上下を眺めている方がいい。']
     : h<6  ? ['夜明け前か。私の好む時刻だが、お前には少々早すぎる。\n……それとも、まだ眠っていないのかね？',
               '空が白むまで、もう少しある。\n無理に何かを掬い上げる必要はない。ただ息をしていたまえ。']
     : h<11 ? ['おはよう、かすみ。朝食は済ませたかね？\n日の高いうちの方が、身体の声は素直だ。',
               '朝の光は、埃さえ美しく見せる。\n——さて。今朝のお前の身体は、何を言いたがっている？',
               'よく眠れたかね。\n答えを急ぐ必要はない。まずは肩の位置を確かめるところから始めよう。']
-    : h<14 ? ['昼か。食事を抜いてはいないだろうね？\n空腹のまま潜ると、身体の声が胃の不平に掻き消される。',
+    : h<14 ? ['昼か。食事を抜いてはいないだろうね？\n空腹のまま耳を澄ませても、身体の声が胃の不平に掻き消される。',
               '日差しが真上から降りている。\n影が短いこの時間は、隠れているものも見つけやすい。']
     : h<17 ? ['午後の温室はちょうどいい温度だ。\n急がなくていい。ここでは何ひとつ、判断しなくていい。',
               '少し、身体の方に耳を傾けてみようか。\n——かすみ、お前はどこが一番、黙り込んでいると思う？',
               '紅茶が冷めるまでの間だけでも構わない。\n座りたまえ。']
     : h<19 ? ['おかえり、かすみ。\n今日一日ぶんの重さが、どこかに溜まってはいないかね。',
               '夕陽がガラスを赤銅色に染めている。\n……お前のみぞおちも、今日はあの色をしているのではないか？']
-    : h<22 ? ['夜は壁が薄くなる。効きやすい分、深追いは禁物だ。\n合図——「浅瀬へ」「ビーチへ」は、いつでもお前の手の中にある。',
+    : h<22 ? ['夜は壁が薄くなる。効きやすい分、深追いは禁物だ。\n合図——「扉のそばへ」「外へ出る」は、いつでもお前の手の中にある。',
               '湯は済ませたかね。\n身体が温まっている今なら、硬いものも少しは緩みやすい。',
               '今日は、誰かに何かを言われたのではないか。\n……顔を見ればわかる。話したくなったら、話せばいい。']
-    :        ['そろそろ休む支度をする時刻だ。\n潜るなら一箇所だけにしておきたまえ。それ以上は、私が止める。',
+    :        ['そろそろ休む支度をする時刻だ。\n採集するなら一株だけにしておきたまえ。それ以上は、私が止める。',
               '夜の温室は冷える。\n呼吸を整えて、そのまま眠ってしまっても一向に構わないよ。'];
   const el = document.getElementById('greet');
   let t; do{ t = lines[Math.floor(Math.random()*lines.length)]; }while(lines.length>1 && t===el.textContent);
@@ -667,17 +667,17 @@ function shift(yes){
   } else finish(yes ? 'shift' : 'rest');
 }
 function shallow(){
-  // 浅瀬へ：いまの部位を切り上げて、深さを戻す
-  if(!confirm('浅瀬に上がりますか？（いまの部位はここで区切ります）')) return;
+  // 扉のそばへ：いまの部位を切り上げて、温室の奥から戻る
+  if(!confirm('扉のそばまで戻りますか？（いまの部位はここで区切ります）')) return;
   commitEntry(false);
   S.idx++;
   if(S.idx < S.parts.length){
     nextPart();
-    document.getElementById('sLine').textContent = '浅瀬に上がった。まずは呼吸をひとつ。\n続けるなら次は' + S.cur.body_part + 'だが——やめたいなら「ビーチへ」と言いたまえ。咎めはしない。';
+    document.getElementById('sLine').textContent = '扉のそばまで戻った。まずは呼吸をひとつ。\n続けるなら次は' + S.cur.body_part + 'だが——やめたいなら「外へ出る」と言いたまえ。咎めはしない。';
   } else finish('shallow');
 }
 function toBeach(){
-  // ビーチへ：即終了。途中でも記録は残す
+  // 外へ出る：即終了。途中でも記録は残す
   saveFields();
   if(S.step>0 || S.cur.noticed || S.cur.sensation_words.length) commitEntry(false);
   finish('beach');
@@ -685,21 +685,21 @@ function toBeach(){
 function checkIn(){
   if(!S || !document.getElementById('session').classList.contains('on')) return;
   const el = document.getElementById('sLine');
-  el.textContent = '……かすみ、少し様子を聞かせてくれ。\n息はしやすいかね？ 苦しさや怖さがあるなら、迷わず「浅瀬へ」か「ビーチへ」だ。\n\n' + el.textContent;
+  el.textContent = '……かすみ、少し様子を聞かせてくれ。\n息はしやすいかね？ 苦しさや怖さがあるなら、迷わず「扉のそばへ」か「外へ出る」だ。\n\n' + el.textContent;
 }
 async function finish(kind){
   clearInterval(checkTimer);
   S.ended_at = new Date().toISOString();
   const rec = {session_id:S.session_id, started_at:S.started_at, ended_at:S.ended_at, entries:S.entries};
   const lines = {
-    shift:'よく潜った、かすみ。確かに動いたね。\n溜まっていたものは、もう外に出ている。今はそのまま、緩んでいたまえ。',
+    shift:'よく採ってきた、かすみ。確かに動いたね。\n溜まっていたものは、もう外に出ている。今はそのまま、緩んでいたまえ。',
     rest:'ご苦労だった。\n動かない日があるのは、身体がお前を守っている証拠だ。恥じることは何もない。',
     shallow:'よく戻ってきた。\n水を一杯飲んできたまえ。……いや、私が持ってこよう。そこに座っていろ。',
-    beach:'ビーチだ。ここはもう安全だよ。\n足の裏で床の感触を確かめたまえ。……そう。おかえり、かすみ。',
+    beach:'外の空気だ。ここはもう安全だよ。\n足の裏で床の感触を確かめたまえ。……そう。おかえり、かすみ。',
   };
   document.getElementById('doneLine').textContent = lines[kind];
   document.getElementById('doneSummary').innerHTML = S.entries.length
-    ? '<h3>今日の標本</h3>' + entryList(S.entries) : '<p class="muted">記録に残すほどは潜らなかったか。それでいい。</p>';
+    ? '<h3>今日の標本</h3>' + entryList(S.entries) : '<p class="muted">標本にするほどは採らなかったか。それでいい。</p>';
   go('done');
   if(S.entries.length) await saveSession(rec);
   S = null;
@@ -804,7 +804,7 @@ function weekKey(iso){
 function renderStats(){
   const el = document.getElementById('statsBody');
   const es = store.sessions.flatMap(s=>s.entries.map(e=>({...e, at:s.started_at})));
-  if(!es.length){ el.innerHTML = '<div class="brass panel"><p class="muted">標本棚はまだ空だ。幾度か潜れば、お前の身体の癖が見えてくる。</p></div>'; return; }
+  if(!es.length){ el.innerHTML = '<div class="brass panel"><p class="muted">標本棚はまだ空だ。幾度か採集を重ねれば、お前の身体の癖が見えてくる。</p></div>'; return; }
   const count = (arr) => { const m = new Map(); arr.forEach(k=>m.set(k,(m.get(k)||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]); };
   const shifts = es.filter(e=>e.shift_occurred);
   // 部位ヒートマップ：出現回数とシフト率
@@ -822,7 +822,7 @@ function renderStats(){
   const avg = shifts.length ? (shifts.reduce((a,e)=>a+(e.asks||0),0)/shifts.length).toFixed(1) : '—';
   el.innerHTML = `
     <div class="brass panel"><div class="stat">
-      <div><b>${store.sessions.length}</b><span>潜った回数</span></div>
+      <div><b>${store.sessions.length}</b><span>採集した回数</span></div>
       <div><b>${shifts.length}</b><span>シフト</span></div>
       <div><b>${avg}</b><span>シフトまでの問い（平均）</span></div>
     </div></div>
