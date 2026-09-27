@@ -126,17 +126,19 @@ input,textarea{font:inherit;color:var(--ink)}
 }
 .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim)}
 .dot.ok{background:#8fae7e;box-shadow:0 0 6px #8fae7e}.dot.ng{background:var(--rose)}
+/* 乳白の曇りガラス：背景の蔦を透かしつつぼかし、文字は苔の深緑 */
 .gear,.medal{
-  border-radius:50%;border:1px solid var(--brass);
-  background:radial-gradient(circle at 35% 30%,rgba(62,79,67,.95),rgba(20,26,22,.95));
-  box-shadow:inset 0 0 0 3px rgba(20,26,22,.9),inset 0 0 0 4px rgba(176,148,87,.4),0 4px 12px rgba(0,0,0,.5);
+  border-radius:50%;border:1px solid rgba(125,106,63,.8);
+  background:rgba(236,230,214,.48);
+  backdrop-filter:blur(9px) saturate(.4) brightness(1.1);-webkit-backdrop-filter:blur(9px) saturate(.4) brightness(1.1);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 3.6px rgba(125,106,63,.35),0 5px 14px rgba(0,0,0,.45);
 }
 .gear{width:40px;height:40px;display:grid;place-items:center}
 svg{stroke-linecap:round;stroke-linejoin:round}
-.gear svg,.medal svg{width:22px;height:22px;fill:none;stroke:var(--brass);stroke-width:1.5}
+.gear svg,.medal svg{width:22px;height:22px;fill:none;stroke:#2a3b2f;stroke-width:1.6}
 .side{display:flex;flex-direction:column;gap:14px;margin-top:22px;align-self:flex-start}
 .medal{width:60px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-.medal span{font-size:10px;letter-spacing:.1em;color:var(--sepia);line-height:1}
+.medal span{font-size:10px;letter-spacing:.1em;color:#2a3b2f;font-weight:700;line-height:1}
 .dock{margin-top:auto;width:100%;max-width:560px;align-self:center;display:flex;flex-direction:column}
 .dive{
   align-self:flex-end;position:relative;width:92px;height:92px;border-radius:50%;margin:0 6px -18px 0;z-index:2;
