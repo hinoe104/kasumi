@@ -126,19 +126,7 @@ input,textarea{font:inherit;color:var(--ink)}
 }
 .dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim)}
 .dot.ok{background:#8fae7e;box-shadow:0 0 6px #8fae7e}.dot.ng{background:var(--rose)}
-/* 乳白の曇りガラス：背景の蔦を透かしつつぼかし、文字は苔の深緑 */
-.gear,.medal{
-  border-radius:50%;border:1px solid rgba(125,106,63,.8);
-  background:rgba(236,230,214,.48);
-  backdrop-filter:blur(9px) saturate(.4) brightness(1.1);-webkit-backdrop-filter:blur(9px) saturate(.4) brightness(1.1);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 3.6px rgba(125,106,63,.35),0 5px 14px rgba(0,0,0,.45);
-}
-.gear{width:40px;height:40px;display:grid;place-items:center}
 svg{stroke-linecap:round;stroke-linejoin:round}
-.gear svg,.medal svg{width:22px;height:22px;fill:none;stroke:#2a3b2f;stroke-width:1.6}
-.side{display:flex;flex-direction:column;gap:14px;margin-top:22px;align-self:flex-start}
-.medal{width:60px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-.medal span{font-size:10px;letter-spacing:.1em;color:#2a3b2f;font-weight:700;line-height:1}
 .dock{margin-top:auto;width:100%;max-width:560px;align-self:center;display:flex;flex-direction:column}
 .dive{
   align-self:flex-end;position:relative;width:92px;height:92px;border-radius:50%;margin:0 6px -18px 0;z-index:2;
@@ -154,6 +142,53 @@ svg{stroke-linecap:round;stroke-linejoin:round}
 #main .speech{margin-bottom:6px;cursor:pointer;min-height:96px;padding-right:40px}
 .speech .next{position:absolute;right:16px;bottom:10px;font-size:10px;color:var(--brass);animation:blink 1.6s infinite}
 #main .sync{margin-top:2px}
+
+
+/* ---------- 目録（引き出しメニュー） ---------- */
+.idxtab{
+  position:fixed;left:0;top:34%;z-index:4;padding:14px 7px 14px 5px;
+  background:linear-gradient(90deg,rgba(18,24,21,.92),rgba(31,42,36,.88));
+  border:1px solid rgba(176,148,87,.7);border-left:0;border-radius:0 3px 3px 0;
+  box-shadow:3px 4px 12px rgba(0,0,0,.45);transition:transform .35s ease, opacity .35s;
+}
+.idxtab span{writing-mode:vertical-rl;font-size:13px;letter-spacing:.5em;color:var(--sepia);padding-bottom:.2em}
+.idxtab::after{content:"";position:absolute;right:3px;top:6px;bottom:6px;border-right:1px solid rgba(176,148,87,.3)}
+body.drawer-open .idxtab{transform:translateX(-100%);opacity:0}
+.drawer-veil{position:fixed;inset:0;z-index:8;background:rgba(10,14,12,.55);opacity:0;pointer-events:none;transition:opacity .4s ease}
+.drawer{
+  position:fixed;top:0;bottom:0;left:0;z-index:9;width:min(80vw,320px);
+  display:flex;flex-direction:column;padding:max(22px,env(safe-area-inset-top)) 20px max(18px,env(safe-area-inset-bottom));
+  background:
+    repeating-linear-gradient(0deg,rgba(216,204,180,.025) 0 1px,transparent 1px 4px),
+    linear-gradient(100deg,#1b2420,#26322b 70%,#222c26);
+  border-right:1px solid var(--brass-dim);box-shadow:inset -5px 0 0 -4px rgba(176,148,87,.35),8px 0 30px rgba(0,0,0,.55);
+  transform:translateX(-104%);transition:transform .5s cubic-bezier(.22,.9,.25,1);
+}
+body.drawer-open .drawer{transform:none}
+body.drawer-open .drawer-veil{opacity:1;pointer-events:auto}
+.dhead{display:flex;align-items:baseline;gap:10px;padding-bottom:14px;border-bottom:1px solid rgba(176,148,87,.35);margin-bottom:8px}
+.dhead b{font-size:20px;letter-spacing:.4em;font-weight:500}
+.dhead i{font-family:"IM Fell English",serif;color:var(--brass);letter-spacing:.15em}
+.dclose{margin-left:auto;font-size:22px;color:var(--ink-dim);line-height:1;padding:0 4px}
+.dlist button,.dfoot button{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px 4px;
+  border-bottom:1px dashed rgba(176,148,87,.22);
+  opacity:0;transform:translateX(-14px);transition:opacity .4s ease, transform .4s ease;
+}
+body.drawer-open .dlist button,body.drawer-open .dfoot button{opacity:1;transform:none}
+body.drawer-open .dlist button:nth-child(1){transition-delay:.12s}
+body.drawer-open .dlist button:nth-child(2){transition-delay:.19s}
+body.drawer-open .dlist button:nth-child(3){transition-delay:.26s}
+body.drawer-open .dfoot button{transition-delay:.33s}
+.dlist .no{width:2.2em;font-family:"IM Fell English",serif;font-style:italic;color:var(--brass-dim);font-size:13px}
+.dlist svg,.dfoot svg{width:22px;height:22px;flex:none;fill:none;stroke:var(--brass);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.dlist .t b{display:block;font-size:17px;letter-spacing:.2em;font-weight:500}
+.dlist .t small{font-size:11px;color:var(--ink-dim);letter-spacing:.06em}
+.dlist button:active{background:rgba(176,148,87,.08)}
+.fern{display:block;margin:auto auto 8px;width:52%;max-height:32vh;fill:none;stroke:rgba(176,148,87,.28);stroke-width:.7;stroke-linecap:round}
+.dfoot{}
+.dfoot button{border:0;font-size:13px;color:var(--ink-dim);padding:10px 4px}
+.dfoot p{font-size:11px;color:var(--ink-dim);padding-left:40px}
 
 /* ---------- 共通ヘッダ ---------- */
 .head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
@@ -326,16 +361,9 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
   <!-- 上部バー -->
   <header class="hud">
     <div class="plate">感覚標本室<span id="syncDot" class="dot"></span></div>
-    <button class="gear" onclick="openSettings()" aria-label="設定">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/></svg>
-    </button>
   </header>
-  <!-- 左の計器列（顔にかからない側） -->
-  <nav class="side">
-    <button class="medal" onclick="openBreath()"><svg viewBox="0 0 24 24"><rect x="10" y="3" width="4" height="13" rx="2"/><circle cx="12" cy="18.5" r="3"/><path d="M12 9v7" stroke-width="2.4"/></svg><span>呼吸</span></button>
-    <button class="medal" onclick="renderHistory();go('history')"><svg viewBox="0 0 24 24"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h11M9 8h6M9 11h4"/></svg><span>記録</span></button>
-    <button class="medal" onclick="renderStats();go('stats')"><svg viewBox="0 0 24 24"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 11c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-2.5 0-4-1.5-4-4 2.5 0 4 1.5 4 4z"/></svg><span>標本棚</span></button>
-  </nav>
+  <!-- 左端の見出し札：押すと目録（引き出し）が滑り出る -->
+  <button class="idxtab" style="display:none" onclick="openDrawer()" aria-label="目録をひらく"><span>目録</span></button>
   <div class="dock">
     <button class="dive" onclick="startSelect()"><span class="ring"></span><b>採集する</b><small>Focusing</small></button>
     <div class="brass speech" onclick="nextTalk()"><span class="name">黒百合</span><p id="greet"></p><span class="next">▼</span></div>
@@ -461,6 +489,22 @@ textarea.field{width:100%;min-height:80px;resize:vertical}
   </div>
 </section>
 
+<!-- 目録（引き出し） -->
+<div class="drawer-veil" id="veil" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dhead"><b>目録</b><i>Index</i><button class="dclose" onclick="closeDrawer()" aria-label="閉じる">×</button></div>
+  <nav class="dlist">
+    <button onclick="drawerGo(openBreath)"><span class="no">I.</span><svg viewBox="0 0 24 24"><rect x="10" y="3" width="4" height="13" rx="2"/><circle cx="12" cy="18.5" r="3"/><path d="M12 9v7" stroke-width="2.4"/></svg><span class="t"><b>呼吸</b><small>水銀とともに、息を整える</small></span></button>
+    <button onclick="drawerGo(()=>{renderHistory();go('history')})"><span class="no">II.</span><svg viewBox="0 0 24 24"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h11M9 8h6M9 11h4"/></svg><span class="t"><b>記録</b><small>採集帳を読み返す</small></span></button>
+    <button onclick="drawerGo(()=>{renderStats();go('stats')})"><span class="no">III.</span><svg viewBox="0 0 24 24"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 11c0-3 2-5 5-5 0 3-2 5-5 5zM12 17c-2.5 0-4-1.5-4-4 2.5 0 4 1.5 4 4z"/></svg><span class="t"><b>標本棚</b><small>身体の癖を眺める</small></span></button>
+  </nav>
+  <svg class="fern" viewBox="0 0 140 215" aria-hidden="true"><path d="M60 212 C60 150 66 80 78 22"/><path d="M61.2 185 q14.5 -8.5 24.2 -3.6 q-12.1 6.0 -24.2 3.6"/><path d="M61.2 185 q-14.5 -8.5 -24.2 -3.6 q12.1 6.0 24.2 3.6"/><path d="M62.4 170 q13.4 -7.8 22.4 -3.4 q-11.2 5.6 -22.4 3.4"/><path d="M62.4 170 q-13.4 -7.8 -22.4 -3.4 q11.2 5.6 22.4 3.4"/><path d="M63.6 155 q12.4 -7.2 20.6 -3.1 q-10.3 5.2 -20.6 3.1"/><path d="M63.6 155 q-12.4 -7.2 -20.6 -3.1 q10.3 5.2 20.6 3.1"/><path d="M64.8 140 q11.3 -6.6 18.8 -2.8 q-9.4 4.7 -18.8 2.8"/><path d="M64.8 140 q-11.3 -6.6 -18.8 -2.8 q9.4 4.7 18.8 2.8"/><path d="M66.0 125 q10.2 -5.9 17.0 -2.5 q-8.5 4.2 -17.0 2.5"/><path d="M66.0 125 q-10.2 -5.9 -17.0 -2.5 q8.5 4.2 17.0 2.5"/><path d="M67.2 110 q9.1 -5.3 15.2 -2.3 q-7.6 3.8 -15.2 2.3"/><path d="M67.2 110 q-9.1 -5.3 -15.2 -2.3 q7.6 3.8 15.2 2.3"/><path d="M68.4 95 q8.0 -4.7 13.4 -2.0 q-6.7 3.4 -13.4 2.0"/><path d="M68.4 95 q-8.0 -4.7 -13.4 -2.0 q6.7 3.4 13.4 2.0"/><path d="M69.6 80 q7.0 -4.1 11.6 -1.7 q-5.8 2.9 -11.6 1.7"/><path d="M69.6 80 q-7.0 -4.1 -11.6 -1.7 q5.8 2.9 11.6 1.7"/><path d="M70.8 65 q5.9 -3.4 9.8 -1.5 q-4.9 2.5 -9.8 1.5"/><path d="M70.8 65 q-5.9 -3.4 -9.8 -1.5 q4.9 2.5 9.8 1.5"/><path d="M72.0 50 q4.8 -2.8 8.0 -1.2 q-4.0 2.0 -8.0 1.2"/><path d="M72.0 50 q-4.8 -2.8 -8.0 -1.2 q4.0 2.0 8.0 1.2"/><path d="M73.2 35 q3.7 -2.2 6.2 -0.9 q-3.1 1.5 -6.2 0.9"/><path d="M73.2 35 q-3.7 -2.2 -6.2 -0.9 q3.1 1.5 6.2 0.9"/></svg>
+  <div class="dfoot">
+    <button onclick="drawerGo(openSettings)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/></svg><span>保存先の設定</span></button>
+    <p id="drawerSync"></p>
+  </div>
+</aside>
+
 <!-- 設定 -->
 <div class="modal" id="settings">
   <div class="brass panel">
@@ -566,6 +610,24 @@ async function deleteSession(sid){
   persist(); renderHistory();
 }
 
+/* ---------- 目録（引き出し） ---------- */
+function openDrawer(){ document.body.classList.add('drawer-open'); document.getElementById('drawer').setAttribute('aria-hidden','false'); document.getElementById('drawerSync').textContent = document.getElementById('syncState').textContent; }
+function closeDrawer(){ document.body.classList.remove('drawer-open'); document.getElementById('drawer').setAttribute('aria-hidden','true'); }
+function drawerGo(fn){ closeDrawer(); setTimeout(fn, 260); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+// 左へ払って閉じる／画面左端から右へ払って開く（ホームのみ）
+(function(){
+  let x0=null, y0=0;
+  document.addEventListener('touchstart', e=>{ const t=e.touches[0]; x0=t.clientX; y0=t.clientY; }, {passive:true});
+  document.addEventListener('touchend', e=>{
+    if(x0===null) return; const t=e.changedTouches[0], dx=t.clientX-x0, dy=Math.abs(t.clientY-y0);
+    const open = document.body.classList.contains('drawer-open');
+    if(open && dx < -50 && dy < 60) closeDrawer();
+    else if(!open && x0 < 24 && dx > 60 && dy < 60 && document.getElementById('main').classList.contains('on')) openDrawer();
+    x0=null;
+  }, {passive:true});
+})();
+
 /* ---------- 設定 ---------- */
 function openSettings(){ document.getElementById('pbUrl').value = store.url; document.getElementById('pbTest').textContent=''; document.getElementById('settings').classList.add('on'); }
 function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
@@ -588,6 +650,7 @@ function go(id){
   bg.classList.toggle('dim', !['title','main','done'].includes(id));
   bg.classList.toggle('closed', id==='done');
   if(id==='main') greet();
+  document.querySelector('.idxtab').style.display = id==='main' ? '' : 'none';
 }
 // 黒百合の台詞（外面＝紳士的・硬質・やや古風。一人称「私」、二人称「かすみ／お前」）
 // 挨拶(g)は時間帯が変わるまで一度きり。台詞枠を押すと、挨拶ではない語り(t)を順に送る
