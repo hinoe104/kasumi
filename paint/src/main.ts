@@ -4,6 +4,7 @@ import { BrushTip, Stroke, PRESETS, BrushPreset, BrushSettings } from "./brush";
 import { ColorPicker, fromHex } from "./color";
 import { floodFill } from "./fill";
 import * as io from "./io";
+import { initPalettes, togglePalette, toggleAll, onToggle } from "./palette";
 
 type Tool = "brush" | "eraser" | "fill" | "picker" | "hand";
 
@@ -129,6 +130,7 @@ function render() {
     vctx.fillStyle = "rgba(128,128,128,.9)"; vctx.fillRect(x - dpr / 2, y - dpr / 2, dpr, dpr);
   }
   $("#zoomLabel").textContent = `${Math.round(view.zoom * 100)}%`;
+  $("#rotLabel").textContent = `${Math.round(((view.rot % 360) + 540) % 360 - 180)}°`;
 }
 
 function frame() {
@@ -401,6 +403,7 @@ function updateCursorStyle() {
 
 window.addEventListener("keydown", e => {
   if ((e.target as HTMLElement).matches("input:not([type=range]):not([type=checkbox]), select")) return;
+  if (e.key === "Tab") { e.preventDefault(); toggleAll(); return; }
   if (e.code === "Space") { spaceDown = true; updateCursorStyle(); e.preventDefault(); return; }
   if (e.key === "Alt") { altDown = true; updateCursorStyle(); e.preventDefault(); return; }
   if (e.key === "r" && !e.ctrlKey) { rotateKey = true; }
@@ -446,9 +449,10 @@ function setTool(t: Tool) {
   tool = t;
   document.querySelectorAll<HTMLButtonElement>("[data-tool]").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
   const brushy = t === "brush" || t === "eraser";
-  $("#presets").hidden = !brushy; $("#brushSliders").hidden = !brushy;
+  $("#presets").hidden = t !== "brush"; $("#brushSliders").hidden = !brushy;
   $("#fillOptions").hidden = t !== "fill";
-  $("#toolOptions h2").textContent = { brush: "ブラシ", eraser: "消しゴム", fill: "塗りつぶし", picker: "スポイト", hand: "手のひら" }[t];
+  $("#noOptions").hidden = brushy || t === "fill";
+  $("#toolTitle").textContent = { brush: "ブラシ", eraser: "消しゴム", fill: "塗りつぶし", picker: "スポイト", hand: "手のひら" }[t];
   renderBrushPanel();
   updateCursorStyle();
   requestRender();
@@ -475,13 +479,14 @@ const SLIDERS: { key: keyof BrushSettings; label: string; min: number; max: numb
 
 function renderBrushPanel() {
   const pr = $("#presets");
-  pr.replaceChildren(...presets.map((p, i) => {
+  pr.replaceChildren(...presets.flatMap((p, i) => {
+    if (p.eraser) return [];
     const b = document.createElement("button");
     b.textContent = p.name;
     b.title = `${p.name} (${i + 1})`;
-    b.classList.toggle("active", (tool === "eraser" && p.eraser) || (tool === "brush" && i === brushPreset));
+    b.classList.toggle("active", i === brushPreset);
     b.onclick = () => selectPreset(i);
-    return b;
+    return [b];
   }));
   const s = currentPreset().settings;
   $("#brushSliders").replaceChildren(...SLIDERS.map(def => {
@@ -671,6 +676,11 @@ function pixelOp(fn: (l: Layer) => void) {
 }
 
 document.querySelectorAll<HTMLButtonElement>("[data-cmd]").forEach(b => (b.onclick = () => commands[b.dataset.cmd!]()));
+$("#zoomLabel").ondblclick = fitView;
+$("#zoomLabel").onclick = () => { view.zoom = 1; requestRender(); };
+$("#rotLabel").onclick = () => { view.rot = 0; requestRender(); };
+document.querySelectorAll<HTMLButtonElement>("[data-win]").forEach(b => (b.onclick = () => togglePalette(b.dataset.win!)));
+onToggle.fn = (id, open) => $(`[data-win="${id}"]`).classList.toggle("active", open);
 
 $<HTMLDialogElement>("#newDialog").addEventListener("close", () => {
   const dlg = $<HTMLDialogElement>("#newDialog");
@@ -724,6 +734,12 @@ setInterval(async () => {
     if (t) document.documentElement.dataset.theme = t;
     else if (matchMedia("(prefers-color-scheme: light)").matches) document.documentElement.dataset.theme = "light";
   } catch { /* ignore */ }
+  initPalettes({
+    tools: { x: 12, y: 12 },
+    color: { x: 12, y: 12, right: true },
+    brush: { x: 12, y: 222, right: true },
+    layers: { x: 260, y: 12, right: true },
+  });
   setFg(fg);
   setTool("brush");
   history.onChange();
