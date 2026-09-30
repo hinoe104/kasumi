@@ -2,11 +2,15 @@ name: Kasumi Paint (Windows build)
 
 on:
   push:
+    branches: [main, claude/paint-app]
     paths: ["paint/**", ".github/workflows/paint-windows.yml"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  release:
     runs-on: windows-latest
     defaults:
       run:
@@ -23,10 +27,21 @@ jobs:
         with:
           workspaces: paint/src-tauri
       - run: npm ci
-      - run: npx tauri build
-      - uses: actions/upload-artifact@v4
+      # every build gets a higher version so the in-app updater picks it up
+      - name: Set version
+        shell: bash
+        run: |
+          node -e "const f='src-tauri/tauri.conf.json',c=require('./'+f);c.version='0.1.${{ github.run_number }}';require('fs').writeFileSync(f,JSON.stringify(c,null,2))"
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         with:
-          name: kasumi-paint-windows
-          path: |
-            paint/src-tauri/target/release/bundle/nsis/*.exe
-            paint/src-tauri/target/release/bundle/msi/*.msi
+          projectPath: paint
+          tagName: paint-v__VERSION__
+          releaseName: Kasumi Paint v__VERSION__
+          releaseBody: 最新版のインストーラです。アプリを入れてあれば、起動時に自動で更新を案内します。
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true

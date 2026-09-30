@@ -4,6 +4,7 @@ import { BrushTip, Stroke, PRESETS, BrushPreset, BrushSettings } from "./brush";
 import { ColorPicker, fromHex } from "./color";
 import { floodFill } from "./fill";
 import * as io from "./io";
+import { checkForUpdate } from "./updater";
 import { initPalettes, togglePalette, toggleAll, onToggle } from "./palette";
 
 type Tool = "brush" | "eraser" | "fill" | "picker" | "hand";
@@ -750,5 +751,7 @@ setInterval(async () => {
     if (saved && confirm("前回の作業が自動保存されています。復元しますか？")) loadDoc(await io.deserialize(saved), "復元");
     else if (saved) await io.autosaveWrite(null);
   } catch { /* no autosave */ }
+  // save work to the autosave slot first so an update never loses a drawing
+  void checkForUpdate(async () => { await io.autosaveWrite(await io.serialize(doc)); });
 })();
 

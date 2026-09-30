@@ -97,3 +97,6 @@ dialog { background: var(--panel); color: var(--text); border: 1px solid var(--l
 dialog::backdrop { background: rgba(0,0,0,.4); }
 dialog input[type=number] { width: 90px; }
 .presets-size button { font-size: 12px; }
+
+#updateBar { position: fixed; left: 50%; bottom: 36px; transform: translateX(-50%); z-index: 2000; display: flex; gap: 10px; align-items: center;
+  padding: 8px 10px 8px 14px; background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,.35); }
