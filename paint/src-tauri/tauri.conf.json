@@ -38,7 +38,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUwQkU5NDZCM0Q4RDIxQTYKUldTbUlZMDlhNVMrVU5WRWl3OFBZSkdocVZjODJzeS9jbVo3b3MyVFppRG8yemFxdzM0RVFLdHgK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVGMTZCRUM0NEQ1Q0U4NEYKUldSUDZGeE54TDRXNzZmQUI0VjQxQzJlYm9xMVBPQ1JZb3Z0QVh4N1MzN2RjVzcrYmVKZXhpdGEK",
       "endpoints": [
         "https://github.com/hinoe104/kasumi/releases/latest/download/latest.json"
       ],
