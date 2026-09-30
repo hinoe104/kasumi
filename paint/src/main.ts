@@ -752,6 +752,10 @@ setInterval(async () => {
     else if (saved) await io.autosaveWrite(null);
   } catch { /* no autosave */ }
   // save work to the autosave slot first so an update never loses a drawing
+  if ("__TAURI_INTERNALS__" in window) {
+    const { getVersion } = await import("@tauri-apps/api/app");
+    $("#statusVer").textContent = "v" + await getVersion();
+  } else $("#statusVer").textContent = "dev";
   void checkForUpdate(async () => { await io.autosaveWrite(await io.serialize(doc)); });
 })();
 
