@@ -260,7 +260,7 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
       };
     });
     return {
-      id: r.id, person: optStr(r.person, w + ' の呼び名'), date: date, question: optStr(r.question, w + ' の問い'),
+      id: r.id, person: optStr(r.person, w + ' の占い師'), date: date, question: optStr(r.question, w + ' の問い'),
       before: before, after: after, followups: followups,
       createdAt: optIso(r.createdAt, w + ' の作成日時'), updatedAt: optIso(r.updatedAt, w + ' の更新日時')
     };
@@ -503,7 +503,7 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
     var ul = h('ul', { class: 'ledger' });
     state.records.slice().sort(byDateDesc).forEach(function (r) {
       ul.appendChild(h('li', null, h('button', { type: 'button', onclick: function () { go('detail', r.id); } },
-        h('span', { class: 'l-top' }, h('span', null, fmtDate(r.date)), h('span', null, r.person || '呼び名なし')),
+        h('span', { class: 'l-top' }, h('span', null, fmtDate(r.date)), h('span', null, r.person || '占い師の記入なし')),
         h('span', { class: 'l-q' }, cut(r.question, 40) || '（問いの記入なし）'),
         h('span', { class: 'l-latest' }, latestText(r)))));
     });
@@ -549,8 +549,8 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
     main.appendChild(h('p', { class: 'small muted' }, '記入する段階を一つ選びます。ほかの段階は、あとから同じ相談に追記できます。'));
     var form = h('form', { novalidate: true });
     guardForm(form);
-    var person = textField('相手の呼び名（任意）', '', false);
-    person.input.setAttribute('placeholder', '例：Aさん');
+    var person = textField('占い師（任意）', '', false);
+    person.input.setAttribute('placeholder', '例：Aさん、〇〇先生');
     var date = dateField('相談した日', todayLocal());
     var question = textField('問い', '', true);
     var common = h('fieldset', null, h('legend', null, '相談'), person.el, date.el, question.el);
@@ -595,7 +595,7 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
     if (!r) { viewList(main); return; }
     main.appendChild(h('h2', null, fmtDate(r.date)));
     var top = h('dl', { class: 'kv' },
-      h('dt', null, '呼び名'), h('dd', null, r.person || '—'),
+      h('dt', null, '占い師'), h('dd', null, r.person || '—'),
       h('dt', null, '問い'), h('dd', null, r.question || '—'));
     main.appendChild(top);
     main.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'quiet', onclick: function () { go('edit', { id: id, stage: 'base' }); } }, '相談の情報を直す')));
@@ -651,12 +651,12 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
     if (!r) { viewList(main); return; }
     var title = arg.stage === 'base' ? '相談の情報' : STAGES[arg.stage];
     main.appendChild(h('h2', null, title));
-    main.appendChild(h('p', { class: 'small muted' }, fmtDate(r.date) + '　' + (r.person || '呼び名なし') + '　' + (cut(r.question, 30) || '')));
+    main.appendChild(h('p', { class: 'small muted' }, fmtDate(r.date) + '　' + (r.person || '占い師の記入なし') + '　' + (cut(r.question, 30) || '')));
     var form = h('form', { novalidate: true });
     guardForm(form);
     var fields, existingFu = null;
     if (arg.stage === 'base') {
-      var p = textField('相手の呼び名（任意）', r.person, false), d = dateField('相談した日', r.date), q = textField('問い', r.question, true);
+      var p = textField('占い師（任意）', r.person, false), d = dateField('相談した日', r.date), q = textField('問い', r.question, true);
       fields = { el: [p.el, d.el, q.el], apply: function () { r.person = p.get(); r.date = d.get(); r.question = q.get(); } };
     } else if (arg.stage === 'before') {
       var bf = beforeFields(r.before);
