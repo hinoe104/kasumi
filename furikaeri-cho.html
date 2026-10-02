@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>相談の振り返り帳</title>
+<style>
+:root {
+  --ground: #FBF8F1;
+  --paper: #FFFDF8;
+  --ink: #1F2A3A;
+  --ink-soft: #4A5566;
+  --rule: #D9D2C3;
+  --accent: #2F4B7C;
+  --accent-08: rgba(47, 75, 124, 0.08);
+  --accent-16: rgba(47, 75, 124, 0.16);
+  --accent-40: rgba(47, 75, 124, 0.40);
+  --serif: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+  --sans: "Yu Gothic", "YuGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, "Noto Sans JP", sans-serif;
+}
+* { box-sizing: border-box; border-radius: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.wrap { max-width: 42rem; margin: 0 auto; padding: 0 16px; }
+header.site { border-bottom: 1px solid var(--rule); padding: 1.5rem 0 0; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.4; margin: 0; }
+h1 { font-size: 1.5rem; letter-spacing: 0.04em; }
+h2 { font-size: 1.25rem; margin: 2rem 0 1rem; }
+h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
+p { margin: 0 0 1rem; }
+nav.tabs { display: flex; flex-wrap: wrap; gap: 0; margin-top: 1rem; }
+nav.tabs button {
+  border: 0; border-bottom: 2px solid transparent; background: none;
+  padding: 0.6rem 0.75rem; min-height: 44px; font: inherit; font-size: 0.95rem; color: var(--ink-soft); cursor: pointer;
+}
+nav.tabs button[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+main { padding-bottom: 4rem; }
+button, .btn {
+  font: inherit; color: var(--accent); background: var(--paper);
+  border: 1px solid var(--accent); padding: 0.55rem 1rem; min-height: 44px; cursor: pointer; line-height: 1.4;
+}
+button.primary { background: var(--accent); color: #fff; }
+button.quiet { border-color: var(--rule); color: var(--ink); }
+button:disabled { opacity: 0.5; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+label.field { display: block; margin: 0 0 1.25rem; }
+.field-label { display: block; font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 0.3rem; }
+input[type="text"], input[type="date"], textarea {
+  font: inherit; color: var(--ink); background: var(--paper);
+  border: 1px solid var(--rule); padding: 0.55rem 0.7rem; width: 100%; max-width: 100%; min-height: 44px;
+}
+textarea { min-height: 5.5rem; resize: vertical; line-height: 1.7; }
+input:focus, textarea:focus { border-color: var(--accent); }
+fieldset { border: 0; border-top: 1px solid var(--rule); margin: 0 0 1.5rem; padding: 1rem 0 0; min-width: 0; }
+legend { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; padding: 0 0.5rem 0 0; }
+.scale-wrap { margin: 0 0 1.25rem; }
+.scale { display: flex; flex-wrap: wrap; gap: 4px; }
+.scale button {
+  min-width: 44px; min-height: 44px; padding: 0.3rem; border: 1px solid var(--rule); color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.scale button[aria-checked="true"] { border: 2px solid var(--ink); font-weight: 700; }
+.scale-ends { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.2rem; }
+.scale-clear { border: 0; background: none; color: var(--ink-soft); text-decoration: underline; padding: 0 0.25rem; min-height: 44px; font-size: 0.85rem; }
+.choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.choices label { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--rule); padding: 0.4rem 0.8rem; min-height: 44px; background: var(--paper); cursor: pointer; }
+.choices input { margin: 0; width: 1.1rem; height: 1.1rem; accent-color: var(--accent); }
+.stage-pick { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule); margin-bottom: 1.5rem; }
+.stage-pick label { flex: 1 1 6rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem; min-height: 44px; cursor: pointer; background: var(--paper); border-right: 1px solid var(--rule); text-align: center; }
+.stage-pick label:last-child { border-right: 0; }
+.stage-pick input { accent-color: var(--accent); margin: 0; }
+.stage-pick label.on { background: var(--accent-08); color: var(--accent); }
+ul.ledger { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+ul.ledger li { border-bottom: 1px solid var(--rule); }
+ul.ledger button {
+  display: block; width: 100%; text-align: left; border: 0; background: none; color: var(--ink); padding: 0.85rem 0.25rem;
+}
+ul.ledger button:hover { background: var(--accent-08); }
+.l-top { display: flex; flex-wrap: wrap; gap: 0 1rem; font-size: 0.85rem; color: var(--ink-soft); }
+.l-q { display: block; margin: 0.15rem 0; }
+.l-latest { display: block; font-size: 0.85rem; color: var(--accent); }
+.muted { color: var(--ink-soft); }
+.small { font-size: 0.85rem; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; margin: 0 0 1rem; }
+dl.kv dt { color: var(--ink-soft); font-size: 0.9rem; }
+dl.kv dd { margin: 0; white-space: pre-wrap; }
+@media (max-width: 420px) { dl.kv { grid-template-columns: 1fr; } dl.kv dd { margin-bottom: 0.5rem; } }
+section.stage { border-top: 1px solid var(--rule); padding-top: 0.25rem; }
+.notice { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 0.85rem; color: var(--ink-soft); padding: 0.5rem 0; margin-top: 0.75rem; }
+.notice:empty { display: none; }
+.notice p { margin: 0.25rem 0; }
+.notice button { font-size: 0.85rem; min-height: 44px; padding: 0.3rem 0.8rem; }
+.msg { font-size: 0.9rem; padding: 0.5rem 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 1rem 0; }
+.msg:empty { display: none; }
+.chart { width: 100%; margin: 0.5rem 0 0.25rem; }
+.chart svg { display: block; width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-size: 0.85rem; color: var(--ink-soft); }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+table.plain { border-collapse: collapse; width: 100%; font-size: 0.9rem; margin: 0.5rem 0 1rem; }
+table.plain th, table.plain td { border-bottom: 1px solid var(--rule); padding: 0.35rem 0.25rem; text-align: left; vertical-align: top; }
+table.plain th { font-weight: normal; color: var(--ink-soft); }
+.num { font-variant-numeric: tabular-nums; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size: 0.8rem; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <h1>相談の振り返り帳</h1>
+    <nav class="tabs" aria-label="画面の切り替え">
+      <button type="button" data-view="list">一覧</button>
+      <button type="button" data-view="new">新規記録</button>
+      <button type="button" data-view="trend">推移</button>
+      <button type="button" data-view="data">書き出し・読み込み</button>
+      <button type="button" data-view="about">この帳面について</button>
+    </nav>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  </div>
+</header>
+<main class="wrap" id="main" tabindex="-1"></main>
+<footer class="site"><div class="wrap">記録はこの端末のブラウザの中にだけ保存されます。</div></footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'furikaeri-cho/records';
+  var META_KEY = 'furikaeri-cho/meta';
+  var FORMAT = 'furikaeri-cho';
+  var VERSION = 1;
+  var BACKUP_DAYS = 30;
+  var SITUATIONS = { moved: '動いた', same: '変わらない', unknown: 'まだ分からない' };
+
+  var state = { records: [], lastExportAt: null };
+  var storageProblem = null; // 直近の保存失敗の内容
+  var loadProblem = null;
+  var currentView = 'list';
+
+  /* ---------- 基本の道具 ---------- */
+
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) {
+        var v = attrs[k];
+        if (v === null || v === undefined || v === false) return;
+        if (k === 'class') el.className = v;
+        else if (k === 'text') el.textContent = v;
+        else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+        else if (v === true) el.setAttribute(k, '');
+        else el.setAttribute(k, v);
+      });
+    }
+    for (var i = 2; i < arguments.length; i++) append(el, arguments[i]);
+    return el;
+  }
+  function append(el, c) {
+    if (c === null || c === undefined || c === false) return;
+    if (Array.isArray(c)) { c.forEach(function (x) { append(el, x); }); return; }
+    el.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+  }
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function s(tag, attrs, text) {
+    var el = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function todayLocal() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function isDateStr(v) {
+    if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+    var p = v.split('-').map(Number);
+    var d = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+    return d.getUTCFullYear() === p[0] && d.getUTCMonth() === p[1] - 1 && d.getUTCDate() === p[2];
+  }
+  // 日付文字列どうしの日数差。時刻やタイムゾーンを介さず、暦の上で数える。
+  function dayNum(v) { var p = v.split('-').map(Number); return Math.round(Date.UTC(p[0], p[1] - 1, p[2]) / 86400000); }
+  function fmtDate(v) {
+    if (!v) return '日付なし';
+    var p = v.split('-');
+    return Number(p[0]) + '年' + Number(p[1]) + '月' + Number(p[2]) + '日';
+  }
+  function fmtShort(v) { var p = v.split('-'); return Number(p[1]) + '/' + Number(p[2]); }
+  function newId() {
+    try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) { /* 下の方法に任せる */ }
+    var r = '';
+    for (var i = 0; i < 4; i++) r += Math.floor(Math.random() * 0x100000000).toString(16);
+    return Date.now().toString(36) + '-' + r;
+  }
+  function nowIso() { return new Date().toISOString(); }
+  function noIme(e) { return e.isComposing || e.keyCode === 229; }
+
+  /* ---------- 形式の確認と整形 ---------- */
+
+  function fail(msg) { throw new Error(msg); }
+  function optStr(v, where) {
+    if (v === undefined || v === null) return '';
+    if (typeof v !== 'string') fail(where + ' が文字列ではありません。');
+    return v;
+  }
+  function optScore(v, where) {
+    if (v === undefined || v === null) return null;
+    if (typeof v !== 'number' || !isFinite(v) || Math.floor(v) !== v || v < 0 || v > 10) fail(where + ' は0から10の整数である必要があります。');
+    return v;
+  }
+  function optIso(v, where) {
+    if (v === undefined || v === null) return null;
+    if (typeof v !== 'string' || isNaN(Date.parse(v))) fail(where + ' の日時が読み取れません。');
+    return v;
+  }
+  function normRecord(r, n) {
+    var w = (n + 1) + '件目の記録';
+    if (!r || typeof r !== 'object' || Array.isArray(r)) fail(w + ' の形が違います。');
+    if (typeof r.id !== 'string' || !r.id) fail(w + ' にIDがありません。');
+    var date = r.date === undefined || r.date === null || r.date === '' ? '' : r.date;
+    if (date !== '' && !isDateStr(date)) fail(w + ' の日付が読み取れません。');
+    var before = null, after = null;
+    if (r.before !== undefined && r.before !== null) {
+      if (typeof r.before !== 'object') fail(w + ' の「占う前」の形が違います。');
+      before = { anxiety: optScore(r.before.anxiety, w + ' の不安の強さ'), expectation: optStr(r.before.expectation, w + ' の期待') };
+    }
+    if (r.after !== undefined && r.after !== null) {
+      if (typeof r.after !== 'object') fail(w + ' の「占った直後」の形が違います。');
+      after = {
+        agreement: optScore(r.after.agreement, w + ' の納得度'),
+        lingering: optScore(r.after.lingering, w + ' の引っかかり'),
+        note: optStr(r.after.note, w + ' のメモ')
+      };
+    }
+    var fus = r.followups === undefined || r.followups === null ? [] : r.followups;
+    if (!Array.isArray(fus)) fail(w + ' の「後日」の形が違います。');
+    var followups = fus.map(function (f, i) {
+      var fw = w + ' の後日の記入（' + (i + 1) + '回目）';
+      if (!f || typeof f !== 'object') fail(fw + ' の形が違います。');
+      var fd = f.date === undefined || f.date === null ? '' : f.date;
+      if (fd !== '' && !isDateStr(fd)) fail(fw + ' の日付が読み取れません。');
+      var sit = f.situation === undefined || f.situation === null ? '' : f.situation;
+      if (sit !== '' && !Object.prototype.hasOwnProperty.call(SITUATIONS, sit)) fail(fw + ' の状況の値が違います。');
+      return {
+        id: typeof f.id === 'string' && f.id ? f.id : newId(),
+        date: fd, anxiety: optScore(f.anxiety, fw + ' の不安の強さ'), situation: sit, note: optStr(f.note, fw + ' のメモ')
+      };
+    });
+    return {
+      id: r.id, person: optStr(r.person, w + ' の呼び名'), date: date, question: optStr(r.question, w + ' の問い'),
+      before: before, after: after, followups: followups,
+      createdAt: optIso(r.createdAt, w + ' の作成日時'), updatedAt: optIso(r.updatedAt, w + ' の更新日時')
+    };
+  }
+  function parseFile(text) {
+    var data;
+    try { data = JSON.parse(text); } catch (e) { fail('JSONとして読み取れません。'); }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) fail('ファイルの形が違います。');
+    if (data.format !== FORMAT) fail('この帳面の書き出しファイルではありません。');
+    if (typeof data.version !== 'number') fail('形式の版が記されていません。');
+    if (data.version > VERSION) fail('このファイルは新しい版（' + data.version + '）の形式です。この帳面では読み込めません。');
+    if (!Array.isArray(data.records)) fail('記録の一覧がありません。');
+    var seen = {};
+    var records = data.records.map(function (r, i) {
+      var n = normRecord(r, i);
+      if (seen[n.id]) fail('同じIDの記録が二つ以上あります（' + (i + 1) + '件目）。');
+      seen[n.id] = true;
+      return n;
+    });
+    return records;
+  }
+
+  /* ---------- 保存 ---------- */
+
+  function storageGet(key) {
+    try { return { ok: true, value: window.localStorage.getItem(key) }; }
+    catch (e) { return { ok: false, error: e }; }
+  }
+  function storageSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+      if (window.localStorage.getItem(key) !== value) return { ok: false, error: new Error('書き込んだ内容を読み返せませんでした。') };
+      return { ok: true };
+    } catch (e) { return { ok: false, error: e }; }
+  }
+  // 書き込みに失敗したら {ok:false} を返す。呼び出す側で警告する。
+  function save() {
+    var r1 = storageSet(STORE_KEY, JSON.stringify({ format: FORMAT, version: VERSION, records: state.records }));
+    var r2 = r1.ok ? storageSet(META_KEY, JSON.stringify({ lastExportAt: state.lastExportAt })) : r1;
+    storageProblem = r2.ok ? null : (r2.error && r2.error.message) || '不明な理由';
+    renderNotice();
+    return r2;
+  }
+  function load() {
+    var got = storageGet(STORE_KEY);
+    if (!got.ok) { loadProblem = '端末の保存領域を開けませんでした。この状態では記録が保存されません。'; return; }
+    if (got.value) {
+      try { state.records = parseFile(got.value); }
+      catch (e) {
+        loadProblem = '保存されていた記録を読み取れませんでした（' + e.message + '）。元のデータは別の場所に残しています。';
+        storageSet(STORE_KEY + '/unreadable-' + Date.now(), got.value);
+        state.records = [];
+      }
+    }
+    var meta = storageGet(META_KEY);
+    if (meta.ok && meta.value) {
+      try { var m = JSON.parse(meta.value); if (m && typeof m.lastExportAt === 'string') state.lastExportAt = m.lastExportAt; } catch (e) { /* 無視してよい補助情報 */ }
+    }
+  }
+  function commit(msgEl, okText) {
+    var r = save();
+    if (msgEl) {
+      msgEl.textContent = r.ok ? okText : '端末への保存に失敗しました。記録はこの画面を閉じるまでのあいだだけ残ります。上の案内から書き出してください。';
+    }
+    return r.ok;
+  }
+
+  /* ---------- 案内 ---------- */
+
+  function renderNotice() {
+    var box = document.getElementById('notice');
+    box.textContent = '';
+    if (loadProblem) box.appendChild(h('p', { text: loadProblem }));
+    if (storageProblem) {
+      box.appendChild(h('p', null, '端末への保存に失敗しました（' + storageProblem + '）。いまの記録を書き出しておくことをお勧めします。 ',
+        h('button', { type: 'button', onclick: doExport }, '今すぐ書き出す')));
+      return;
+    }
+    if (state.records.length) {
+      var base = state.lastExportAt;
+      if (!base) {
+        base = state.records.reduce(function (min, r) { return r.createdAt && (!min || r.createdAt < min) ? r.createdAt : min; }, null);
+      }
+      if (base && (Date.now() - Date.parse(base)) >= BACKUP_DAYS * 86400000) {
+        box.appendChild(h('p', null, (state.lastExportAt ? '最後に書き出してから30日以上が経っています。' : 'まだ一度も書き出していません。') + ' ',
+          h('button', { type: 'button', class: 'quiet', onclick: function () { go('data'); } }, '書き出しへ')));
+      }
+    }
+  }
+
+  /* ---------- 書き出し ---------- */
+
+  function doExport() {
+    var payload = { format: FORMAT, version: VERSION, exportedAt: nowIso(), records: state.records };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = h('a', { href: url, download: 'furikaeri-cho-' + todayLocal() + '.json' });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    state.lastExportAt = nowIso();
+    var hadProblem = storageProblem;
+    var r = storageSet(META_KEY, JSON.stringify({ lastExportAt: state.lastExportAt }));
+    if (!r.ok && !hadProblem) storageProblem = (r.error && r.error.message) || '不明な理由';
+    renderNotice();
+  }
+
+  /* ---------- 0〜10 のマス ---------- */
+
+  function scale(label, value, lowText, highText) {
+    var current = value === undefined ? null : value;
+    var group = h('div', { class: 'scale', role: 'radiogroup', 'aria-label': label });
+    var buttons = [];
+    function paint() {
+      buttons.forEach(function (b, v) {
+        var on = current === v;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+        b.tabIndex = (current === null ? v === 0 : on) ? 0 : -1;
+        if (on) {
+          var a = 0.22 + 0.078 * v;
+          b.style.background = 'rgba(47, 75, 124, ' + a.toFixed(3) + ')';
+          b.style.color = a > 0.55 ? '#fff' : 'var(--ink)';
+        } else {
+          b.style.background = 'rgba(47, 75, 124, ' + (0.02 + 0.022 * v).toFixed(3) + ')';
+          b.style.color = 'var(--ink)';
+        }
+      });
+      status.textContent = current === null ? '未記入' : '選択：' + current;
+    }
+    function pick(v, focus) { current = v; paint(); if (focus) buttons[v].focus(); }
+    for (var v = 0; v <= 10; v++) {
+      (function (v) {
+        var b = h('button', { type: 'button', role: 'radio', 'aria-label': String(v), onclick: function () { pick(v); } }, String(v));
+        b.addEventListener('keydown', function (e) {
+          var k = e.key, nv = null;
+          if (k === 'ArrowRight' || k === 'ArrowUp') nv = Math.min(10, v + 1);
+          else if (k === 'ArrowLeft' || k === 'ArrowDown') nv = Math.max(0, v - 1);
+          else if (k === 'Home') nv = 0;
+          else if (k === 'End') nv = 10;
+          if (nv !== null) { e.preventDefault(); pick(nv, true); }
+        });
+        buttons.push(b);
+        group.appendChild(b);
+      })(v);
+    }
+    var status = h('span', { class: 'small muted' });
+    var wrap = h('div', { class: 'scale-wrap' },
+      h('span', { class: 'field-label' }, label),
+      group,
+      h('div', { class: 'scale-ends' },
+        h('span', null, '0：' + lowText + '　10：' + highText),
+        h('span', null, status, h('button', { type: 'button', class: 'scale-clear', onclick: function () { current = null; paint(); } }, '未記入に戻す'))));
+    paint();
+    return { el: wrap, get: function () { return current; } };
+  }
+
+  function textField(label, value, multi) {
+    var input = multi ? h('textarea', { rows: 3 }) : h('input', { type: 'text', autocomplete: 'off' });
+    input.value = value || '';
+    return { el: h('label', { class: 'field' }, h('span', { class: 'field-label' }, label), input), get: function () { return input.value; }, input: input };
+  }
+  function dateField(label, value) {
+    var input = h('input', { type: 'date' });
+    input.value = value || '';
+    return { el: h('label', { class: 'field' }, h('span', { class: 'field-label' }, label), input), get: function () { return isDateStr(input.value) ? input.value : ''; } };
+  }
+  function situationField(value) {
+    var name = 'sit-' + newId();
+    var wrap = h('div', { class: 'choices', role: 'radiogroup', 'aria-label': '状況' });
+    var inputs = [];
+    [''].concat(Object.keys(SITUATIONS)).forEach(function (k) {
+      var inp = h('input', { type: 'radio', name: name, value: k });
+      if ((value || '') === k) inp.checked = true;
+      inputs.push(inp);
+      wrap.appendChild(h('label', null, inp, k ? SITUATIONS[k] : '未記入'));
+    });
+    return {
+      el: h('div', { class: 'field' }, h('span', { class: 'field-label' }, '状況'), wrap),
+      get: function () { var c = inputs.filter(function (i) { return i.checked; })[0]; return c ? c.value : ''; }
+    };
+  }
+
+  // フォーム内の単行入力で、日本語入力の変換確定の Enter が送信にならないようにする
+  function guardForm(form) {
+    form.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+      if (noIme(e) || e.target.type !== 'submit') e.preventDefault();
+    });
+    form.addEventListener('submit', function (e) { e.preventDefault(); });
+  }
+
+  /* ---------- 画面の切り替え ---------- */
+
+  function go(view, arg) {
+    currentView = view;
+    document.querySelectorAll('nav.tabs button').forEach(function (b) {
+      if (b.getAttribute('data-view') === view || (view === 'detail' && b.getAttribute('data-view') === 'list')) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    });
+    var main = document.getElementById('main');
+    main.textContent = '';
+    var views = { list: viewList, new: viewNew, detail: viewDetail, edit: viewEdit, trend: viewTrend, data: viewData, about: viewAbout };
+    (views[view] || viewList)(main, arg);
+    window.scrollTo(0, 0);
+  }
+
+  function byDateDesc(a, b) {
+    var ad = a.date || '', bd = b.date || '';
+    if (ad !== bd) return ad < bd ? 1 : -1;
+    return (b.createdAt || '') < (a.createdAt || '') ? -1 : 1;
+  }
+  function find(id) { return state.records.filter(function (r) { return r.id === id; })[0]; }
+  function cut(t, n) { t = (t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n) + '…' : t; }
+  function v(x) { return x === null || x === undefined ? '—' : String(x); }
+
+  function latestText(r) {
+    var fu = r.followups.slice().sort(function (a, b) { return (a.date || '') < (b.date || '') ? -1 : 1; });
+    var last = fu[fu.length - 1];
+    if (last) {
+      var parts = ['後日' + (last.date ? '（' + fmtShort(last.date) + '）' : '')];
+      if (last.anxiety !== null) parts.push('不安 ' + last.anxiety);
+      if (last.situation) parts.push(SITUATIONS[last.situation]);
+      return parts.join('　');
+    }
+    if (r.after) return '直後　納得 ' + v(r.after.agreement) + '　引っかかり ' + v(r.after.lingering);
+    if (r.before) return '占う前　不安 ' + v(r.before.anxiety);
+    return '値の記入なし';
+  }
+
+  /* ---------- 一覧 ---------- */
+
+  function viewList(main) {
+    main.appendChild(h('h2', null, '一覧'));
+    if (!state.records.length) {
+      main.appendChild(h('p', { class: 'muted' }, 'まだ記録がありません。'));
+      main.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'primary', onclick: function () { go('new'); } }, '新しく記録する')));
+      return;
+    }
+    var ul = h('ul', { class: 'ledger' });
+    state.records.slice().sort(byDateDesc).forEach(function (r) {
+      ul.appendChild(h('li', null, h('button', { type: 'button', onclick: function () { go('detail', r.id); } },
+        h('span', { class: 'l-top' }, h('span', null, fmtDate(r.date)), h('span', null, r.person || '呼び名なし')),
+        h('span', { class: 'l-q' }, cut(r.question, 40) || '（問いの記入なし）'),
+        h('span', { class: 'l-latest' }, latestText(r)))));
+    });
+    main.appendChild(h('p', { class: 'small muted' }, state.records.length + '件'));
+    main.appendChild(ul);
+  }
+
+  /* ---------- 段階ごとの入力欄 ---------- */
+
+  function beforeFields(b) {
+    b = b || {};
+    var anx = scale('不安の強さ', b.anxiety, 'ない', 'とても強い');
+    var exp = textField('期待していること', b.expectation, true);
+    return { el: [anx.el, exp.el], get: function () { return { anxiety: anx.get(), expectation: exp.get() }; } };
+  }
+  function afterFields(a) {
+    a = a || {};
+    var ag = scale('納得度', a.agreement, 'まったくない', 'とても納得した');
+    var li = scale('引っかかり', a.lingering, 'ない', 'とても残っている');
+    var note = textField('メモ', a.note, true);
+    return {
+      el: [h('p', { class: 'small muted' }, '納得度と引っかかりは、別々に記入します。両方が高いこともあります。'), ag.el, li.el, note.el],
+      get: function () { return { agreement: ag.get(), lingering: li.get(), note: note.get() }; }
+    };
+  }
+  function followupFields(f) {
+    f = f || {};
+    var d = dateField('記入する日', f.date || todayLocal());
+    var anx = scale('不安の強さ', f.anxiety, 'ない', 'とても強い');
+    var sit = situationField(f.situation);
+    var note = textField('メモ', f.note, true);
+    return {
+      el: [d.el, anx.el, sit.el, note.el],
+      get: function () { return { id: f.id || newId(), date: d.get(), anxiety: anx.get(), situation: sit.get(), note: note.get() }; }
+    };
+  }
+  var STAGES = { before: '占う前', after: '占った直後', followup: '後日' };
+
+  /* ---------- 新規記録 ---------- */
+
+  function viewNew(main) {
+    main.appendChild(h('h2', null, '新規記録'));
+    main.appendChild(h('p', { class: 'small muted' }, '記入する段階を一つ選びます。ほかの段階は、あとから同じ相談に追記できます。'));
+    var form = h('form', { novalidate: true });
+    guardForm(form);
+    var person = textField('相手の呼び名（任意）', '', false);
+    person.input.setAttribute('placeholder', '例：Aさん');
+    var date = dateField('相談した日', todayLocal());
+    var question = textField('問い', '', true);
+    var common = h('fieldset', null, h('legend', null, '相談'), person.el, date.el, question.el);
+
+    var groups = { before: beforeFields(), after: afterFields(), followup: followupFields() };
+    var sets = {};
+    var pickName = 'stage-' + newId();
+    var pickLabels = {};
+    var pick = h('div', { class: 'stage-pick', role: 'radiogroup', 'aria-label': '記入する段階' });
+    var chosen = 'before';
+    Object.keys(STAGES).forEach(function (k) {
+      sets[k] = h('fieldset', { hidden: k !== chosen }, h('legend', null, STAGES[k]), groups[k].el);
+      var inp = h('input', { type: 'radio', name: pickName, value: k, onchange: function () {
+        chosen = k;
+        Object.keys(sets).forEach(function (x) { sets[x].hidden = x !== k; pickLabels[x].className = x === k ? 'on' : ''; });
+      } });
+      if (k === chosen) inp.checked = true;
+      pickLabels[k] = h('label', { class: k === chosen ? 'on' : '' }, inp, STAGES[k]);
+      pick.appendChild(pickLabels[k]);
+    });
+
+    var msg = h('div', { class: 'msg', role: 'status', 'aria-live': 'polite' });
+    var saveBtn = h('button', { type: 'button', class: 'primary', onclick: function () {
+      var t = nowIso();
+      var r = { id: newId(), person: person.get(), date: date.get(), question: question.get(), before: null, after: null, followups: [], createdAt: t, updatedAt: t };
+      if (chosen === 'before') r.before = groups.before.get();
+      else if (chosen === 'after') r.after = groups.after.get();
+      else r.followups.push(groups.followup.get());
+      state.records.push(r);
+      commit(null);
+      go('detail', r.id);
+    } }, '記録する');
+    append(form, [common, pick, sets.before, sets.after, sets.followup, msg,
+      h('div', { class: 'row-actions' }, saveBtn, h('button', { type: 'button', class: 'quiet', onclick: function () { go('list'); } }, 'やめる'))]);
+    main.appendChild(form);
+  }
+
+  /* ---------- 一件の詳細 ---------- */
+
+  function viewDetail(main, id) {
+    var r = find(id);
+    if (!r) { viewList(main); return; }
+    main.appendChild(h('h2', null, fmtDate(r.date)));
+    var top = h('dl', { class: 'kv' },
+      h('dt', null, '呼び名'), h('dd', null, r.person || '—'),
+      h('dt', null, '問い'), h('dd', null, r.question || '—'));
+    main.appendChild(top);
+    main.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'quiet', onclick: function () { go('edit', { id: id, stage: 'base' }); } }, '相談の情報を直す')));
+
+    var sb = h('section', { class: 'stage' }, h('h3', null, '占う前'));
+    if (r.before) {
+      sb.appendChild(h('dl', { class: 'kv' }, h('dt', null, '不安の強さ'), h('dd', { class: 'num' }, v(r.before.anxiety)), h('dt', null, '期待していること'), h('dd', null, r.before.expectation || '—')));
+    } else sb.appendChild(h('p', { class: 'muted small' }, '未記入'));
+    sb.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', onclick: function () { go('edit', { id: id, stage: 'before' }); } }, r.before ? '直す' : '記入する')));
+    main.appendChild(sb);
+
+    var sa = h('section', { class: 'stage' }, h('h3', null, '占った直後'));
+    if (r.after) {
+      sa.appendChild(h('dl', { class: 'kv' }, h('dt', null, '納得度'), h('dd', { class: 'num' }, v(r.after.agreement)), h('dt', null, '引っかかり'), h('dd', { class: 'num' }, v(r.after.lingering)), h('dt', null, 'メモ'), h('dd', null, r.after.note || '—')));
+    } else sa.appendChild(h('p', { class: 'muted small' }, '未記入'));
+    sa.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', onclick: function () { go('edit', { id: id, stage: 'after' }); } }, r.after ? '直す' : '記入する')));
+    main.appendChild(sa);
+
+    var sf = h('section', { class: 'stage' }, h('h3', null, '後日'));
+    if (!r.followups.length) sf.appendChild(h('p', { class: 'muted small' }, '未記入'));
+    r.followups.slice().sort(function (a, b) { return (a.date || '') < (b.date || '') ? -1 : 1; }).forEach(function (f) {
+      var gap = f.date && r.date ? '（相談から' + (dayNum(f.date) - dayNum(r.date)) + '日）' : '';
+      sf.appendChild(h('dl', { class: 'kv' },
+        h('dt', null, '日付'), h('dd', null, (f.date ? fmtDate(f.date) : '—') + gap),
+        h('dt', null, '不安の強さ'), h('dd', { class: 'num' }, v(f.anxiety)),
+        h('dt', null, '状況'), h('dd', null, f.situation ? SITUATIONS[f.situation] : '—'),
+        h('dt', null, 'メモ'), h('dd', null, f.note || '—')));
+      sf.appendChild(h('div', { class: 'row-actions' },
+        h('button', { type: 'button', class: 'quiet', onclick: function () { go('edit', { id: id, stage: 'followup', fid: f.id }); } }, 'この記入を直す'),
+        h('button', { type: 'button', class: 'quiet', onclick: function () {
+          if (!window.confirm('この後日の記入を削除します。よろしいですか。')) return;
+          r.followups = r.followups.filter(function (x) { return x.id !== f.id; });
+          r.updatedAt = nowIso();
+          commit(null); go('detail', id);
+        } }, 'この記入を削除')));
+    });
+    sf.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', onclick: function () { go('edit', { id: id, stage: 'followup' }); } }, '後日の記入を追加する')));
+    main.appendChild(sf);
+
+    main.appendChild(h('section', { class: 'stage' }, h('div', { class: 'row-actions' },
+      h('button', { type: 'button', class: 'quiet', onclick: function () { go('list'); } }, '一覧へ戻る'),
+      h('button', { type: 'button', class: 'quiet', onclick: function () {
+        if (!window.confirm('この相談の記録を削除します。削除した記録は戻せません。よろしいですか。')) return;
+        state.records = state.records.filter(function (x) { return x.id !== id; });
+        commit(null); go('list');
+      } }, 'この相談を削除'))));
+  }
+
+  /* ---------- 追記・修正 ---------- */
+
+  function viewEdit(main, arg) {
+    var r = find(arg.id);
+    if (!r) { viewList(main); return; }
+    var title = arg.stage === 'base' ? '相談の情報' : STAGES[arg.stage];
+    main.appendChild(h('h2', null, title));
+    main.appendChild(h('p', { class: 'small muted' }, fmtDate(r.date) + '　' + (r.person || '呼び名なし') + '　' + (cut(r.question, 30) || '')));
+    var form = h('form', { novalidate: true });
+    guardForm(form);
+    var fields, existingFu = null;
+    if (arg.stage === 'base') {
+      var p = textField('相手の呼び名（任意）', r.person, false), d = dateField('相談した日', r.date), q = textField('問い', r.question, true);
+      fields = { el: [p.el, d.el, q.el], apply: function () { r.person = p.get(); r.date = d.get(); r.question = q.get(); } };
+    } else if (arg.stage === 'before') {
+      var bf = beforeFields(r.before);
+      fields = { el: bf.el, apply: function () { r.before = bf.get(); } };
+    } else if (arg.stage === 'after') {
+      var af = afterFields(r.after);
+      fields = { el: af.el, apply: function () { r.after = af.get(); } };
+    } else {
+      if (arg.fid) existingFu = r.followups.filter(function (x) { return x.id === arg.fid; })[0] || null;
+      var ff = followupFields(existingFu);
+      fields = { el: ff.el, apply: function () {
+        var nf = ff.get();
+        if (existingFu) r.followups = r.followups.map(function (x) { return x.id === existingFu.id ? nf : x; });
+        else r.followups.push(nf);
+      } };
+    }
+    form.appendChild(h('fieldset', null, h('legend', { class: 'vh' }, title), fields.el));
+    var msg = h('div', { class: 'msg', role: 'status', 'aria-live': 'polite' });
+    form.appendChild(msg);
+    form.appendChild(h('div', { class: 'row-actions' },
+      h('button', { type: 'button', class: 'primary', onclick: function () {
+        fields.apply();
+        r.updatedAt = nowIso();
+        var ok = commit(null);
+        go('detail', r.id);
+        if (!ok) document.getElementById('notice').scrollIntoView();
+      } }, '記録する'),
+      h('button', { type: 'button', class: 'quiet', onclick: function () { go('detail', r.id); } }, 'やめる')));
+    main.appendChild(form);
+  }
+
+  /* ---------- 推移（SVG） ---------- */
+
+  // series: [{name, points:[{x, y}], dash, marker}]
+  function lineChart(opts) {
+    var W = Math.max(280, Math.round(opts.width)), H = opts.height || 220;
+    var padL = 30, padR = 12, padT = 12, padB = 30;
+    var iw = W - padL - padR, ih = H - padT - padB;
+    var x0 = opts.xMin, x1 = opts.xMax === opts.xMin ? opts.xMin + 1 : opts.xMax;
+    var y0 = opts.yMin, y1 = opts.yMax;
+    function X(x) { return opts.xMax === opts.xMin ? padL + iw / 2 : padL + (x - x0) / (x1 - x0) * iw; }
+    function Y(y) { return padT + ih - (y - y0) / (y1 - y0) * ih; }
+    var svg = s('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img', 'aria-label': opts.label, 'font-family': 'inherit' });
+    svg.appendChild(s('title', {}, opts.label));
+    opts.yTicks.forEach(function (t) {
+      svg.appendChild(s('line', { x1: padL, x2: W - padR, y1: Y(t), y2: Y(t), stroke: '#D9D2C3', 'stroke-width': 1 }));
+      svg.appendChild(s('text', { x: padL - 6, y: Y(t) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#4A5566' }, String(t)));
+    });
+    var lastRight = -Infinity;
+    opts.xTicks.forEach(function (t) {
+      var x = X(t.x);
+      if (x - lastRight < 38) return;
+      lastRight = x;
+      svg.appendChild(s('text', { x: x, y: H - 10, 'text-anchor': 'middle', 'font-size': 11, fill: '#4A5566' }, t.label));
+    });
+    opts.series.forEach(function (se) {
+      var pts = se.points.filter(function (p) { return p.y !== null && p.y !== undefined; });
+      if (pts.length > 1) {
+        svg.appendChild(s('polyline', {
+          points: pts.map(function (p) { return X(p.x).toFixed(1) + ',' + Y(p.y).toFixed(1); }).join(' '),
+          fill: 'none', stroke: se.color || '#2F4B7C', 'stroke-width': 1.5, 'stroke-dasharray': se.dash || 'none'
+        }));
+      }
+      pts.forEach(function (p) {
+        var hollow = p.hollow !== undefined ? p.hollow : se.hollow;
+        var c = s('circle', { cx: X(p.x), cy: Y(p.y), r: 4, fill: hollow ? '#FBF8F1' : (se.color || '#2F4B7C'), stroke: se.color || '#2F4B7C', 'stroke-width': 1.5 });
+        if (p.title) c.appendChild(s('title', {}, p.title));
+        svg.appendChild(c);
+        if (p.text) svg.appendChild(s('text', { x: X(p.x), y: Y(p.y) - 8, 'text-anchor': 'middle', 'font-size': 11, fill: '#1F2A3A' }, p.text));
+      });
+    });
+    return svg;
+  }
+  function legendItem(text, color, dash, hollow) {
+    var sv = s('svg', { width: 28, height: 12, 'aria-hidden': 'true' });
+    sv.appendChild(s('line', { x1: 0, x2: 28, y1: 6, y2: 6, stroke: color, 'stroke-width': 1.5, 'stroke-dasharray': dash || 'none' }));
+    sv.appendChild(s('circle', { cx: 14, cy: 6, r: 4, fill: hollow ? '#FBF8F1' : color, stroke: color, 'stroke-width': 1.5 }));
+    return h('span', null, sv, text);
+  }
+
+  var resizeTimer = null;
+  function viewTrend(main) {
+    main.appendChild(h('h2', null, '推移'));
+    main.appendChild(h('p', { class: 'small muted' }, 'ご自身が記入した値を、日付の順に並べています。'));
+    var sorted = state.records.filter(function (r) { return r.date; }).slice().sort(function (a, b) { return -byDateDesc(a, b); });
+    var holder = h('div');
+    main.appendChild(holder);
+    function draw() {
+      holder.textContent = '';
+      var width = holder.clientWidth || 320;
+
+      // 1. 占った直後：納得度と引っかかり
+      holder.appendChild(h('h3', null, '占った直後の納得度と引っかかり'));
+      var withAfter = sorted.filter(function (r) { return r.after && (r.after.agreement !== null || r.after.lingering !== null); });
+      if (!withAfter.length) holder.appendChild(h('p', { class: 'muted small' }, '「占った直後」の記入がまだありません。'));
+      else {
+        var ag = [], li = [], ticks = [];
+        withAfter.forEach(function (r, i) {
+          var lab = fmtShort(r.date) + (r.person ? ' ' + r.person : '');
+          ag.push({ x: i, y: r.after.agreement, title: lab + '　納得度 ' + v(r.after.agreement) });
+          li.push({ x: i, y: r.after.lingering, title: lab + '　引っかかり ' + v(r.after.lingering) });
+          ticks.push({ x: i, label: fmtShort(r.date) });
+        });
+        holder.appendChild(h('div', { class: 'legend' }, legendItem('納得度', '#2F4B7C', null, false), legendItem('引っかかり', 'rgba(47, 75, 124, 0.6)', '4 3', true)));
+        holder.appendChild(h('div', { class: 'chart' }, lineChart({
+          width: width, label: '相談ごとの納得度と引っかかり', xMin: 0, xMax: withAfter.length - 1, yMin: 0, yMax: 10, yTicks: [0, 2, 4, 6, 8, 10], xTicks: ticks,
+          series: [{ points: ag }, { points: li, dash: '4 3', hollow: true, color: 'rgba(47, 75, 124, 0.6)' }]
+        })));
+        holder.appendChild(h('p', { class: 'small muted' }, '横軸は相談の順です（間隔は日数に比例しません）。'));
+      }
+
+      // 2. 不安の強さ（占う前と後日）
+      holder.appendChild(h('h3', null, '不安の強さ'));
+      var pts = [];
+      state.records.forEach(function (r) {
+        if (r.date && r.before && r.before.anxiety !== null) pts.push({ d: r.date, y: r.before.anxiety, kind: 'before', who: r.person });
+        r.followups.forEach(function (f) { if (f.date && f.anxiety !== null) pts.push({ d: f.date, y: f.anxiety, kind: 'followup', who: r.person }); });
+      });
+      pts.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : (a.kind === 'before' ? 1 : -1); });
+      if (!pts.length) holder.appendChild(h('p', { class: 'muted small' }, '不安の強さの記入がまだありません。'));
+      else {
+        var dMin = dayNum(pts[0].d), dMax = dayNum(pts[pts.length - 1].d);
+        var xt = [];
+        pts.forEach(function (p) { if (!xt.length || xt[xt.length - 1].label !== fmtShort(p.d)) xt.push({ x: dayNum(p.d), label: fmtShort(p.d) }); });
+        holder.appendChild(h('div', { class: 'legend' }, legendItem('占う前', '#2F4B7C', null, false), legendItem('後日', '#2F4B7C', null, true)));
+        holder.appendChild(h('div', { class: 'chart' }, lineChart({
+          width: width, label: '不安の強さの推移', xMin: dMin, xMax: dMax, yMin: 0, yMax: 10, yTicks: [0, 2, 4, 6, 8, 10], xTicks: xt,
+          series: [{ points: pts.map(function (p) {
+            return { x: dayNum(p.d), y: p.y, hollow: p.kind === 'followup', title: fmtShort(p.d) + '　' + (p.kind === 'before' ? '占う前' : '後日') + '　不安 ' + p.y };
+          }) }]
+        })));
+        holder.appendChild(h('p', { class: 'small muted' }, '横軸は日付です。塗りつぶしの点は占う前、白抜きの点は後日の記入です。'));
+      }
+
+      // 3. 相談の間隔
+      holder.appendChild(h('h3', null, '相談の間隔'));
+      if (sorted.length < 2) holder.appendChild(h('p', { class: 'muted small' }, '日付のある相談が二件以上になると表示します。'));
+      else {
+        var gaps = [];
+        for (var i = 1; i < sorted.length; i++) gaps.push({ from: sorted[i - 1], to: sorted[i], days: dayNum(sorted[i].date) - dayNum(sorted[i - 1].date) });
+        var maxG = Math.max.apply(null, gaps.map(function (g) { return g.days; }));
+        var step = maxG <= 10 ? 2 : maxG <= 30 ? 5 : maxG <= 90 ? 15 : maxG <= 180 ? 30 : 60;
+        var top = Math.max(step, Math.ceil(maxG / step) * step);
+        var yt = []; for (var t = 0; t <= top; t += step) yt.push(t);
+        holder.appendChild(h('div', { class: 'chart' }, lineChart({
+          width: width, label: '前の相談からの日数', xMin: 0, xMax: gaps.length - 1, yMin: 0, yMax: top, yTicks: yt,
+          xTicks: gaps.map(function (g, i) { return { x: i, label: fmtShort(g.to.date) }; }),
+          series: [{ points: gaps.map(function (g, i) { return { x: i, y: g.days, text: String(g.days), title: fmtShort(g.from.date) + '→' + fmtShort(g.to.date) + '　' + g.days + '日' }; }) }]
+        })));
+        holder.appendChild(h('p', { class: 'small muted' }, '縦軸は、前の相談からの日数です。横軸の日付は、後の方の相談の日です。'));
+        var tb = h('tbody');
+        gaps.slice().reverse().forEach(function (g) {
+          tb.appendChild(h('tr', null, h('td', null, fmtDate(g.to.date)), h('td', { class: 'num' }, g.days + '日'),
+            h('td', { class: 'num' }, g.to.before && g.to.before.anxiety !== null ? String(g.to.before.anxiety) : '—')));
+        });
+        holder.appendChild(h('table', { class: 'plain' }, h('thead', null, h('tr', null, h('th', null, '相談した日'), h('th', null, '前の相談から'), h('th', null, '占う前の不安'))), tb));
+      }
+    }
+    draw();
+    window.onresize = function () {
+      if (currentView !== 'trend') return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(draw, 150);
+    };
+  }
+
+  /* ---------- 書き出し・読み込み ---------- */
+
+  function viewData(main) {
+    main.appendChild(h('h2', null, '書き出し'));
+    main.appendChild(h('p', null, 'すべての記録を、JSONファイルとして端末に保存します。'));
+    main.appendChild(h('p', { class: 'small muted' }, '現在 ' + state.records.length + ' 件。' +
+      (state.lastExportAt ? '最後に書き出した日時：' + new Date(state.lastExportAt).toLocaleString('ja-JP') : 'まだ書き出していません。')));
+    main.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'primary', onclick: function () { doExport(); go('data'); } }, '書き出す')));
+
+    main.appendChild(h('h2', null, '読み込み'));
+    main.appendChild(h('p', null, '書き出したJSONファイルを選んで、記録を取り込みます。'));
+    var msg = h('div', { class: 'msg', role: 'status', 'aria-live': 'polite' });
+    var step2 = h('div');
+    var file = h('input', { type: 'file', accept: '.json,application/json', id: 'import-file' });
+    file.addEventListener('change', function () {
+      step2.textContent = ''; msg.textContent = '';
+      var f = file.files && file.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onerror = function () { msg.textContent = 'ファイルを読めませんでした。記録は変更していません。'; };
+      reader.onload = function () {
+        var incoming;
+        try { incoming = parseFile(String(reader.result)); }
+        catch (e) { msg.textContent = '読み込めませんでした。記録は変更していません。理由：' + e.message; file.value = ''; return; }
+        var have = {}; state.records.forEach(function (r) { have[r.id] = true; });
+        var fresh = incoming.filter(function (r) { return !have[r.id]; });
+        var name = 'mode-' + newId();
+        var mAdd = h('input', { type: 'radio', name: name, value: 'add', checked: true });
+        var mRep = h('input', { type: 'radio', name: name, value: 'replace' });
+        step2.appendChild(h('p', null, 'ファイルには ' + incoming.length + ' 件の記録があります。取り込み方を選んでください。'));
+        step2.appendChild(h('div', { class: 'choices', role: 'radiogroup', 'aria-label': '取り込み方' },
+          h('label', null, mAdd, '現在の記録に追加する（' + fresh.length + '件を追加、IDが同じ ' + (incoming.length - fresh.length) + '件は飛ばす）'),
+          h('label', null, mRep, '現在の記録をすべて置き換える（現在 ' + state.records.length + '件）')));
+        step2.appendChild(h('div', { class: 'row-actions' },
+          h('button', { type: 'button', class: 'primary', onclick: function () {
+            if (mRep.checked) {
+              if (!window.confirm('現在の記録 ' + state.records.length + '件を、ファイルの ' + incoming.length + '件で置き換えます。置き換えた記録は戻せません。よろしいですか。')) return;
+              state.records = incoming;
+            } else {
+              state.records = state.records.concat(fresh);
+            }
+            var ok = save().ok;
+            go('data');
+            var m = document.querySelector('#main .msg');
+            if (m) m.textContent = (mRep.checked ? incoming.length + '件で置き換えました。' : fresh.length + '件を追加しました。' + (incoming.length - fresh.length ? (incoming.length - fresh.length) + '件はIDが同じため飛ばしました。' : '')) +
+              (ok ? '' : '　ただし、端末への保存に失敗しました。上の案内をご覧ください。');
+          } }, '取り込む'),
+          h('button', { type: 'button', class: 'quiet', onclick: function () { step2.textContent = ''; file.value = ''; } }, 'やめる')));
+      };
+      reader.readAsText(f);
+    });
+    main.appendChild(h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'ファイルを選ぶ'), file));
+    main.appendChild(step2);
+    main.appendChild(msg);
+
+    main.appendChild(h('h2', null, 'すべて削除'));
+    main.appendChild(h('p', { class: 'small muted' }, 'この端末に保存されている記録をすべて消します。消した記録は、書き出したファイルがなければ戻せません。'));
+    main.appendChild(h('div', { class: 'row-actions' }, h('button', { type: 'button', class: 'quiet', disabled: !state.records.length, onclick: function () {
+      if (!window.confirm('すべての記録（' + state.records.length + '件）を削除します。戻せません。よろしいですか。')) return;
+      state.records = [];
+      save();
+      go('data');
+      var m = document.querySelector('#main .msg');
+      if (m) m.textContent = 'すべての記録を削除しました。';
+    } }, 'すべての記録を削除する')));
+  }
+
+  /* ---------- この帳面について ---------- */
+
+  function viewAbout(main) {
+    main.appendChild(h('h2', null, 'この帳面について'));
+    [
+      'この帳面は、占いや相談を受けたご本人が、受ける前と後の気持ち、その後の変化を、ご自身のために記録するためのものです。',
+      '記録は、お使いの端末のブラウザの中にだけ保存されます。作り手を含め、ほかの誰にも送られません。この画面は外部と通信しません。',
+      'ブラウザのデータの消去や端末の故障などで記録が消えた場合、元に戻すことはできません。ときどき「書き出し」でファイルに保存しておくことをお勧めします。',
+      'この帳面は、占いの当否を判定せず、占い師を評価しません。画面に表示するのは、ご自身が記入した値の推移と、相談の間隔だけです。'
+    ].forEach(function (t) { main.appendChild(h('p', null, t)); });
+  }
+
+  /* ---------- 起動 ---------- */
+
+  document.querySelectorAll('nav.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () { go(b.getAttribute('data-view')); });
+  });
+  load();
+  renderNotice();
+  go('list');
+})();
+</script>
+</body>
+</html>
