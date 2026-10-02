@@ -80,8 +80,10 @@ legend { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; paddin
 .stage-pick { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--rule); margin-bottom: 1.5rem; }
 .stage-pick label { flex: 1 1 6rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem; min-height: 44px; cursor: pointer; background: var(--paper); border-right: 1px solid var(--rule); text-align: center; }
 .stage-pick label:last-child { border-right: 0; }
-.stage-pick input { accent-color: var(--accent); margin: 0; }
-.stage-pick label.on { background: var(--accent-08); color: var(--accent); }
+.stage-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.stage-pick label { white-space: nowrap; position: relative; }
+.stage-pick label:focus-within { outline: 2px solid var(--accent); outline-offset: -2px; }
+.stage-pick label.on { background: var(--accent); color: #fff; font-weight: 600; }
 ul.ledger { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 ul.ledger li { border-bottom: 1px solid var(--rule); }
 ul.ledger button {
@@ -583,7 +585,7 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
       commit(null);
       go('detail', r.id);
     } }, '記録する');
-    append(form, [common, pick, sets.before, sets.after, sets.followup, msg,
+    append(form, [pick, common, sets.before, sets.after, sets.followup, msg,
       h('div', { class: 'row-actions' }, saveBtn, h('button', { type: 'button', class: 'quiet', onclick: function () { go('list'); } }, 'やめる'))]);
     main.appendChild(form);
   }
