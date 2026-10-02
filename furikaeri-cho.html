@@ -740,7 +740,7 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
   var resizeTimer = null;
   function viewTrend(main) {
     main.appendChild(h('h2', null, '推移'));
-    main.appendChild(h('p', { class: 'small muted' }, 'ご自身が記入した値を、日付の順に並べています。'));
+    main.appendChild(h('p', { class: 'small muted' }, '記入した値を、日付の順に並べています。'));
     var sorted = state.records.filter(function (r) { return r.date; }).slice().sort(function (a, b) { return -byDateDesc(a, b); });
     var holder = h('div');
     main.appendChild(holder);
@@ -895,10 +895,10 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
   function viewAbout(main) {
     main.appendChild(h('h2', null, 'この帳面について'));
     [
-      'この帳面は、占いや相談を受けたご本人が、受ける前と後の気持ち、その後の変化を、ご自身のために記録するためのものです。',
+      'この帳面は、占いや相談を受ける前と後の気持ち、その後の変化を、自分のために記録しておくための帳面です。',
       '記録は、お使いの端末のブラウザの中にだけ保存されます。作り手を含め、ほかの誰にも送られません。この画面は外部と通信しません。',
       'ブラウザのデータの消去や端末の故障などで記録が消えた場合、元に戻すことはできません。ときどき「書き出し」でファイルに保存しておくことをお勧めします。',
-      'この帳面は、占いの当否を判定せず、占い師を評価しません。画面に表示するのは、ご自身が記入した値の推移と、相談の間隔だけです。'
+      'この帳面は、占いの当否を判定せず、占い師を評価しません。画面に表示するのは、あなたが記入した値の推移と、相談の間隔だけです。'
     ].forEach(function (t) { main.appendChild(h('p', null, t)); });
   }
 
