@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<title>相談の振り返り帳</title>
+<title>Fortunal｜占いや相談の前後を書き留める帳面</title>
 <style>
 :root {
   --ground: #FBF8F1;
@@ -36,6 +36,7 @@ body {
 header.site { border-bottom: 1px solid var(--rule); padding: 1.5rem 0 0; }
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.4; margin: 0; }
 h1 { font-size: 1.5rem; letter-spacing: 0.04em; }
+.subtitle { margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--ink-soft); }
 h2 { font-size: 1.25rem; margin: 2rem 0 1rem; }
 h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
 p { margin: 0 0 1rem; }
@@ -121,7 +122,8 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
 <body>
 <header class="site">
   <div class="wrap">
-    <h1>相談の振り返り帳</h1>
+    <h1>Fortunal</h1>
+    <p class="subtitle">占いや相談の前後を書き留める帳面</p>
     <nav class="tabs" aria-label="画面の切り替え">
       <button type="button" data-view="list">一覧</button>
       <button type="button" data-view="new">新規記録</button>
@@ -359,7 +361,7 @@ footer.site { border-top: 1px solid var(--rule); padding: 1rem 0 2rem; font-size
     var payload = { format: FORMAT, version: VERSION, exportedAt: nowIso(), records: state.records };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
-    var a = h('a', { href: url, download: 'furikaeri-cho-' + todayLocal() + '.json' });
+    var a = h('a', { href: url, download: 'fortunal-' + todayLocal() + '.json' });
     document.body.appendChild(a);
     a.click();
     a.remove();
