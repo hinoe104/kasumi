@@ -42,4 +42,33 @@ c = new Chess('6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1');
 c.move('Ra7');
 check('チェックでない手の説明', /チェックになってない/.test(G.whyNotMate(c)));
 
-process.exit(failed ? 1 : 0);
+// 両取り（フォーク）を見つける：Nc7+ でキングとルーク
+c = new Chess('r3k3/8/8/1N6/8/8/8/4K3 w - - 0 1');
+const fork = c.moves({ verbose: true }).find((m) => m.san === 'Nc7+');
+check('フォークを説明する', /両取り/.test(G.reasonFor(c, fork)), G.reasonFor(c, fork));
+
+// 振り返り：ミスと決着の一手を見つける
+(async () => {
+  // 白=きつね、黒=ひよこで1局作る（乱数は固定）
+  let seed = 7;
+  Math.random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const g = new Chess();
+  while (!g.isGameOver() && g.history().length < 120) g.move(window.KasumiAI.bestMove(g, g.turn() === 'w' ? 'kitsune' : 'hiyoko'));
+  const game = {
+    pgn: g.pgn(),
+    playerColor: 'w',
+    result: g.isCheckmate() ? 'win' : 'draw',
+    events: [{ type: 'hint', ply: 0, san: g.history()[0] }],
+  };
+  const n = g.history().length;
+  const t = Date.now();
+  const a = await G.analyzeGame(game);
+  check('全手を分析', a.plies.length === n, `${n}手 / ${Date.now() - t}ms / ${game.result}`);
+  const aiBlunder = a.plies.find((p) => p.by === 'ai' && p.chance);
+  check('AI のミスとチャンスを指摘', !!aiBlunder, aiBlunder && aiBlunder.text.replace(/<[^>]+>/g, ''));
+  check('ヒントの手に印', a.plies[0].hinted);
+  if (game.result === 'win') check('最後は決着の一手', a.plies[n - 1].tag === 'mate', a.plies[n - 1].text.replace(/<[^>]+>/g, ''));
+  check('どの手にも説明がある', a.plies.every((p) => p.text && p.arrows.length >= 1));
+  console.log('summary:', JSON.stringify(a.summary));
+  process.exit(failed ? 1 : 0);
+})();

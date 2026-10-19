@@ -35,7 +35,7 @@
   const $ = (sel) => document.querySelector(sel);
 
   const state = {
-    mode: 'game', // 'game' | 'puzzle' | 'records'
+    mode: 'game', // 'game' | 'puzzle' | 'records' | 'review'
     chess: new Chess(),
     playerColor: 'w',
     level: 'hiyoko',
@@ -44,6 +44,8 @@
     pending: null, // 警告中の手 { move, warning }
     hintMove: null,
     marks: [], // ガイドが注意をうながしているマス
+    arrows: [], // 振り返りで盤に描く矢印
+    review: null, // { game, analysis, sans, cursor }
     thinking: false,
     over: false,
     // 対局の記録（あとでAI分析に使う）
@@ -70,6 +72,7 @@
   }
 
   function orientation() {
+    if (state.mode === 'review') return state.review.game.playerColor;
     return state.mode === 'puzzle' ? PUZZLE_COLOR() : state.playerColor;
   }
   function PUZZLE_COLOR() {
@@ -107,7 +110,7 @@
         if (last && (last.from === sq || last.to === sq)) cls.push('last');
         if (target) cls.push(target.captured ? 'capture' : 'move');
         if (sq === kingInCheck) cls.push('check');
-        if (state.guideOn && state.marks.includes(sq)) cls.push('warn');
+        if ((state.guideOn || state.mode === 'review') && state.marks.includes(sq)) cls.push('warn');
         if (state.hintMove && (state.hintMove.from === sq || state.hintMove.to === sq)) cls.push('hint');
         el.className = cls.join(' ');
         el.innerHTML =
@@ -120,6 +123,33 @@
         );
       }
     }
+    renderArrows(flip);
+  }
+
+  function renderArrows(flip) {
+    const svg = $('#arrows');
+    const center = (sq) => {
+      const f = sq.charCodeAt(0) - 97;
+      const r = Number(sq[1]);
+      return [(flip ? 7 - f : f) + 0.5, (flip ? r - 1 : 8 - r) + 0.5];
+    };
+    svg.innerHTML = state.arrows
+      .map((a) => {
+        const [x1, y1] = center(a.from);
+        let [x2, y2] = center(a.to);
+        const len = Math.hypot(x2 - x1, y2 - y1);
+        // 矢じりがマスの中心に来るよう、少し手前で止める
+        x2 -= ((x2 - x1) / len) * 0.25;
+        y2 -= ((y2 - y1) / len) * 0.25;
+        return `<line class="arrow ${a.kind}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#head-${a.kind})"/>`;
+      })
+      .join('');
+    svg.insertAdjacentHTML(
+      'afterbegin',
+      `<defs>${['played', 'best']
+        .map((k) => `<marker id="head-${k}" class="arrow-head ${k}" viewBox="0 0 4 4" refX="1.2" refY="2" markerWidth="3" markerHeight="3" orient="auto"><path d="M0,0 L4,2 L0,4 z"/></marker>`)
+        .join('')}</defs>`
+    );
   }
 
   // ---------- ガイドの吹き出し ----------
@@ -143,6 +173,7 @@
 
   // ---------- 操作 ----------
   function myTurn() {
+    if (state.mode === 'review' || state.mode === 'records') return false;
     if (state.mode === 'puzzle') return !state.puzzleSolved && !state.thinking;
     return !state.over && !state.thinking && state.chess.turn() === state.playerColor;
   }
@@ -367,11 +398,15 @@
           ? '<b>ステイルメイトで引き分け。</b><br>手番の側が、チェックされてないのに動かせる手がない状態のこと。勝っているときは、相手のキングに逃げ道を1つ残してあげるのがコツだよ。'
           : `<b>引き分け（${reason}）。</b>`,
     }[result];
-    say(msg + '<br><span class="sub">この対局は「記録」に保存したよ。</span>', result === 'win' ? 'good' : 'info');
-    setActions([{ label: 'もう一局', primary: true, onClick: newGame }]);
+    say(msg + '<br><span class="sub">この対局は「記録」に保存したよ。どうして勝てたのか・負けたのか、1手ずつ振り返ってみよう。</span>', result === 'win' ? 'good' : 'info');
+    const id = Date.now().toString(36);
+    setActions([
+      { label: '振り返る', primary: true, onClick: () => openReview(id) },
+      { label: 'もう一局', onClick: newGame },
+    ]);
     const games = load(STORE.games, []);
     games.unshift({
-      id: Date.now().toString(36),
+      id,
       startedAt: state.startedAt,
       endedAt: new Date().toISOString(),
       playerColor: state.playerColor,
@@ -532,7 +567,9 @@
           <span class="sub">${g.playerColor === 'w' ? '白' : '黒'} / AI ${LEVEL_NAME[g.level]} / ${g.reason}</span>
         </div>
         <div class="sub">${Math.ceil(g.moves / 2)} 手 ・ ヒント ${g.hints} 回 ・ もどした ${g.undos} 回 ・ 注意を聞いた ${heeded} 回 / スルー ${ignored} 回</div>
+        <div class="record-actions"><button type="button" class="btn small primary review-btn">${g.analysis ? '振り返る' : '振り返る（分析する）'}</button></div>
         <details><summary>棋譜（PGN）</summary><pre></pre><button type="button" class="btn small">コピー</button></details>`;
+      li.querySelector('.review-btn').addEventListener('click', () => openReview(g.id));
       li.querySelector('pre').textContent = g.pgn;
       li.querySelector('details button').addEventListener('click', (ev) => {
         navigator.clipboard?.writeText(g.pgn).then(() => (ev.target.textContent = 'コピーしたよ'));
@@ -550,7 +587,187 @@
     $('#records').hidden = mode !== 'records';
     $('#game-setup').hidden = mode !== 'game';
     $('#puzzle-setup').hidden = mode !== 'puzzle';
+    $('#review-panel').hidden = mode !== 'review';
+    if (mode !== 'review') state.arrows = [];
   }
+
+  // ---------- 振り返り ----------
+  const TAG_LABEL = { blunder: '大きなミス', mistake: 'ミス', good: 'いい手', mate: 'チェックメイト', ok: '' };
+
+  async function openReview(id) {
+    const game = load(STORE.games, []).find((g) => g.id === id);
+    if (!game) return;
+    state.mode = 'review';
+    state.review = { game, analysis: null, sans: [], cursor: 0 };
+    Object.assign(state, { selected: null, pending: null, hintMove: null, marks: [], arrows: [] });
+    for (const tab of document.querySelectorAll('[data-tab]')) tab.setAttribute('aria-selected', String(tab.dataset.tab === 'records'));
+    showPanel('review');
+    const c = new Chess();
+    c.loadPgn(game.pgn);
+    state.review.sans = c.history();
+    state.chess = c;
+    renderBoard();
+    $('#review-summary').innerHTML = '';
+    $('#review-graph').innerHTML = '';
+    $('#review-moves').innerHTML = '';
+    setActions([]);
+    let analysis = game.analysis && game.analysis.version === G.ANALYSIS_VERSION ? game.analysis : null;
+    if (!analysis) {
+      say('棋譜を分析中…', 'info');
+      analysis = await G.analyzeGame(game, (done, total) => {
+        if (state.review && state.review.game.id === id) {
+          say(`棋譜を分析中… <b>${done} / ${total}</b> 手<br><span class="sub">1手ずつ「もっといい手はなかったか」を調べてるよ。</span>`);
+        }
+      });
+      // 分析結果も記録に残す（③のクセ分析で使う）
+      const games = load(STORE.games, []);
+      const saved = games.find((g) => g.id === id);
+      if (saved) {
+        saved.analysis = analysis;
+        save(STORE.games, games);
+      }
+    }
+    if (state.mode !== 'review' || state.review.game.id !== id) return; // 分析中に別の画面へ移動した
+    state.review.analysis = analysis;
+    renderReviewPanel();
+    gotoPly(0);
+  }
+
+  function gotoPly(n) {
+    const r = state.review;
+    r.cursor = Math.max(0, Math.min(r.sans.length, n));
+    const c = new Chess();
+    for (const san of r.sans.slice(0, r.cursor)) c.move(san);
+    state.chess = c;
+    const ply = r.cursor > 0 ? r.analysis.plies[r.cursor - 1] : null;
+    state.marks = ply ? ply.marks : [];
+    state.arrows = ply ? ply.arrows : [];
+    renderBoard();
+    if (ply) {
+      const label = TAG_LABEL[ply.tag];
+      const head = `<span class="sub">${Math.floor((r.cursor - 1) / 2) + 1}手目${label ? ` ・ <span class="tag ${ply.tag}">${label}</span>` : ''}</span><br>`;
+      say(head + ply.text, ply.tag === 'blunder' || ply.tag === 'mistake' ? (ply.by === 'player' ? 'warn' : 'good') : 'info');
+    } else {
+      say('<b>振り返り</b><br>下の「まとめ」で勝負の分かれ目を確認して、▶ で1手目から見ていこう。<br><span class="sub">金の矢印は実際に指した手、緑の矢印はもっと良かった手（またはチャンスの手）だよ。</span>');
+    }
+    setActions([
+      { label: '◀ 前', onClick: () => gotoPly(r.cursor - 1) },
+      { label: '次 ▶', primary: true, onClick: () => gotoPly(r.cursor + 1) },
+      { label: '最初へ', onClick: () => gotoPly(0) },
+    ]);
+    updateReviewMarkers();
+  }
+
+  function renderReviewPanel() {
+    const { game, analysis } = state.review;
+    const sm = analysis.summary;
+    const resultLabel = { win: '勝ち', loss: '負け', draw: '引き分け' }[game.result];
+    $('#review-summary').innerHTML = `
+      <p><span class="result ${game.result}">${resultLabel}</span> <span class="sub">${game.reason} ・ AI ${LEVEL_NAME[game.level]}</span></p>
+      <p class="why">${sm.why}</p>
+      ${sm.turning.length ? '<h3>勝負の分かれ目</h3><ul class="turning"></ul>' : ''}
+      <p class="sub">あなたのいい手 ${sm.counts.good} ・ ミス ${sm.counts.mistakes} ・ 大きなミス ${sm.counts.blunders}${sm.counts.chances ? ` ・ AI のミスをとがめた ${sm.counts.caught} / ${sm.counts.chances}` : ''}</p>
+      <p class="tip"><b>次に意識すること</b><br>${sm.tip}</p>`;
+    const ul = $('#review-summary .turning');
+    for (const t of sm.turning) {
+      const li = document.createElement('li');
+      li.innerHTML = `<button type="button" class="link">${t.label}</button> <span class="sub">${t.note}</span>`;
+      li.querySelector('button').addEventListener('click', () => gotoPly(t.ply + 1));
+      ul.appendChild(li);
+    }
+    renderGraph();
+    renderMoveList();
+  }
+
+  // 形勢グラフ：上があなた有利、下が AI 有利
+  function renderGraph() {
+    const { game, analysis } = state.review;
+    const W = 300, H = 96, mid = H / 2, amp = H / 2 - 8;
+    const sign = game.playerColor === 'w' ? 1 : -1;
+    const vals = [0, ...analysis.plies.map((p) => sign * p.evalWhite)];
+    const n = vals.length - 1 || 1;
+    const x = (i) => (i / n) * W;
+    const y = (v) => mid - (Math.max(-1000, Math.min(1000, v)) / 1000) * amp;
+    const pts = vals.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const dots = analysis.plies
+      .map((p, i) => {
+        if (p.tag !== 'blunder' && p.tag !== 'mistake') return '';
+        const cls = p.by === 'player' ? 'dot-mine' : 'dot-ai';
+        return `<circle class="${cls}" cx="${x(i + 1)}" cy="${y(vals[i + 1])}" r="4"/>`;
+      })
+      .join('');
+    $('#review-graph').innerHTML = `
+      <div class="graph-wrap">
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="形勢グラフ">
+          <line class="zero" x1="0" x2="${W}" y1="${mid}" y2="${mid}"/>
+          <line class="cursor" id="graph-cursor" x1="0" x2="0" y1="0" y2="${H}"/>
+          <polyline class="eval" points="${pts}"/>
+          ${dots}
+        </svg>
+        <span class="axis top">あなた有利</span><span class="axis bottom">AI 有利</span>
+        <div class="graph-tip" hidden></div>
+      </div>
+      <div class="legend"><span><i class="dot-mine"></i>あなたのミス</span><span><i class="dot-ai"></i>AI のミス（チャンス）</span></div>`;
+    const svg = $('#review-graph svg');
+    const tip = $('#review-graph .graph-tip');
+    const plyAt = (ev) => {
+      const rect = svg.getBoundingClientRect();
+      return Math.round(((ev.clientX - rect.left) / rect.width) * n);
+    };
+    svg.addEventListener('mousemove', (ev) => {
+      const i = plyAt(ev);
+      const v = vals[i] / 100;
+      const p = analysis.plies[i - 1];
+      tip.hidden = false;
+      tip.style.left = `${(i / n) * 100}%`;
+      tip.textContent = i === 0 ? '開始' : `${Math.floor((i - 1) / 2) + 1}手目 ${p.san}　${v >= 0 ? 'あなた' : 'AI'} +${Math.abs(v).toFixed(1)}`;
+    });
+    svg.addEventListener('mouseleave', () => (tip.hidden = true));
+    svg.addEventListener('click', (ev) => gotoPly(plyAt(ev)));
+  }
+
+  function renderMoveList() {
+    const { analysis } = state.review;
+    const box = $('#review-moves');
+    box.innerHTML = '';
+    analysis.plies.forEach((p, i) => {
+      if (i % 2 === 0) {
+        const num = document.createElement('span');
+        num.className = 'num';
+        num.textContent = `${i / 2 + 1}.`;
+        box.appendChild(num);
+      }
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = `mv ${p.by} ${p.tag}`;
+      b.dataset.ply = String(i + 1);
+      b.textContent = p.san + ({ blunder: '??', mistake: '?' }[p.tag] || '');
+      b.title = TAG_LABEL[p.tag] || '';
+      b.addEventListener('click', () => gotoPly(i + 1));
+      box.appendChild(b);
+    });
+  }
+
+  function updateReviewMarkers() {
+    const r = state.review;
+    for (const b of document.querySelectorAll('#review-moves .mv')) {
+      b.classList.toggle('current', Number(b.dataset.ply) === r.cursor);
+    }
+    const cur = document.querySelector('#review-moves .mv.current');
+    if (cur) cur.scrollIntoView({ block: 'nearest' });
+    const line = $('#graph-cursor');
+    if (line) {
+      const xpos = (r.cursor / (r.sans.length || 1)) * 300;
+      line.setAttribute('x1', xpos);
+      line.setAttribute('x2', xpos);
+    }
+  }
+
+  document.addEventListener('keydown', (ev) => {
+    if (state.mode !== 'review' || !state.review || !state.review.analysis) return;
+    if (ev.key === 'ArrowRight') gotoPly(state.review.cursor + 1);
+    if (ev.key === 'ArrowLeft') gotoPly(state.review.cursor - 1);
+  });
 
   function syncSetupControls() {
     for (const b of document.querySelectorAll('[data-color]')) b.setAttribute('aria-pressed', String(b.dataset.color === state.playerColor));
