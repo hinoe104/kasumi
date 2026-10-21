@@ -121,7 +121,9 @@ header p{color:var(--ink-dim);font-size:14px}
 .switch{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
 .switch input{width:18px;height:18px;accent-color:var(--lilac)}
 
-#puzzle-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#puzzle-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.puzzle-level{font-size:13px;font-weight:700;margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font:inherit;font-weight:700;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
 .chip.solved{background:rgba(77,155,116,.18);border-color:var(--green)}
 .chip.current{box-shadow:0 0 0 2px var(--gold)}

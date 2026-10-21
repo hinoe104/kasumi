@@ -403,6 +403,7 @@
     hangingPieces,
     checkMove,
     describeMove,
+    describeAction,
     turnAdvice,
     hint,
     reasonFor,

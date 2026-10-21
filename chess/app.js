@@ -10,7 +10,8 @@
   const STORE = {
     games: 'kasumi-chess-games-v1',
     current: 'kasumi-chess-current-v1',
-    solved: 'kasumi-chess-solved-v1',
+    solvedLegacy: 'kasumi-chess-solved-v1', // 問題が8問だったころの「何問目」形式
+    solved: 'kasumi-chess-solved-v2', // 問題の id で保存
     guide: 'kasumi-chess-guide-v1',
   };
 
@@ -34,6 +35,13 @@
 
   const $ = (sel) => document.querySelector(sel);
 
+  function loadSolved() {
+    const ids = new Set(load(STORE.solved, []));
+    const LEGACY_IDS = ['backrank', 'queen-king', 'ladder', 'smothered', 'scholar', 'arabian', 'promotion', 'backrank-black'];
+    for (const i of load(STORE.solvedLegacy, [])) if (LEGACY_IDS[i]) ids.add(LEGACY_IDS[i]);
+    return ids;
+  }
+
   const state = {
     mode: 'game', // 'game' | 'puzzle' | 'records' | 'review'
     chess: new Chess(),
@@ -54,10 +62,10 @@
     hints: 0,
     startedAt: null,
     // パズル
-    puzzleIndex: 0,
+    puzzleIndex: 0, // はじまりの処理で、まだ解いていない最初の問題に合わせる
     puzzleTries: 0,
     puzzleSolved: false,
-    solved: new Set(load(STORE.solved, [])),
+    solved: loadSolved(),
   };
 
   // ---------- 盤 ----------
@@ -475,15 +483,25 @@
     renderPuzzleList();
     renderBoard();
     const side = state.chess.turn() === 'w' ? '白' : '黒';
-    say(`<b>第${state.puzzleIndex + 1}問「${p.title}」</b><br>あなたは${side}。1手でチェックメイトしよう！`);
+    const level = window.KasumiPuzzleLevels.find((l) => l.key === p.level).label;
+    say(`<span class="sub">${level}</span><br><b>第${state.puzzleIndex + 1}問「${p.title}」</b><br>あなたは${side}。1手でチェックメイトしよう！`);
     puzzleActions();
   }
 
   function puzzleActions() {
     const buttons = [];
     if (!state.puzzleSolved) buttons.push({ label: 'ヒント', onClick: puzzleHint });
-    buttons.push({ label: state.puzzleSolved ? '次の問題へ' : 'とばす', primary: state.puzzleSolved, onClick: () => openPuzzle(state.puzzleIndex + 1) });
+    buttons.push({ label: state.puzzleSolved ? '次の問題へ' : 'とばす', primary: state.puzzleSolved, onClick: () => openPuzzle(nextPuzzle()) });
     setActions(buttons);
+  }
+
+  // 次のまだ解いていない問題（全部解いていたら、ただの次の問題）
+  function nextPuzzle() {
+    for (let k = 1; k <= PUZZLES.length; k++) {
+      const i = (state.puzzleIndex + k) % PUZZLES.length;
+      if (!state.solved.has(PUZZLES[i].id)) return i;
+    }
+    return state.puzzleIndex + 1;
   }
 
   function puzzleHint() {
@@ -511,15 +529,16 @@
     renderBoard();
     if (c.isCheckmate()) {
       state.puzzleSolved = true;
-      state.solved.add(state.puzzleIndex);
+      state.solved.add(PUZZLES[state.puzzleIndex].id);
       save(STORE.solved, [...state.solved]);
       renderPuzzleList();
-      say(`<b>正解！チェックメイト！</b><br>${PUZZLES[state.puzzleIndex].lesson}`, 'good');
+      const all = state.solved.size === PUZZLES.length ? `<br><b>これで全 ${PUZZLES.length} 問クリア！すごい！</b>` : '';
+      say(`<b>正解！チェックメイト！</b><br>${PUZZLES[state.puzzleIndex].lesson}${all}`, 'good');
       puzzleActions();
       return;
     }
     const why = G.whyNotMate(c);
-    say(`<b>おしい！</b>${G.describeMove(played)}だと…<br>${why}`, 'warn');
+    say(`<b>おしい！</b>${G.describeAction(played)}と…<br>${why}`, 'warn');
     state.thinking = true;
     setTimeout(() => {
       state.thinking = false;
@@ -532,17 +551,27 @@
   function renderPuzzleList() {
     const box = $('#puzzle-list');
     box.innerHTML = '';
-    PUZZLES.forEach((p, i) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'chip' + (i === state.puzzleIndex ? ' current' : '') + (state.solved.has(i) ? ' solved' : '');
-      b.textContent = `${i + 1}`;
-      b.title = p.title;
-      b.setAttribute('aria-label', `第${i + 1}問 ${p.title}${state.solved.has(i) ? '（クリア）' : ''}`);
-      b.addEventListener('click', () => openPuzzle(i));
-      box.appendChild(b);
-    });
-    $('#puzzle-progress').textContent = `${state.solved.size} / ${PUZZLES.length} 問クリア`;
+    for (const level of window.KasumiPuzzleLevels) {
+      const items = PUZZLES.map((p, i) => ({ p, i })).filter(({ p }) => p.level === level.key);
+      const done = items.filter(({ p }) => state.solved.has(p.id)).length;
+      const group = document.createElement('div');
+      group.className = 'puzzle-group';
+      group.innerHTML = `<div class="puzzle-level">${level.label} <span class="sub">${done} / ${items.length}</span></div><div class="chips"></div>`;
+      for (const { p, i } of items) {
+        const solved = state.solved.has(p.id);
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip' + (i === state.puzzleIndex ? ' current' : '') + (solved ? ' solved' : '');
+        b.textContent = `${i + 1}`;
+        b.title = p.title;
+        b.setAttribute('aria-label', `第${i + 1}問 ${p.title}${solved ? '（クリア）' : ''}`);
+        b.addEventListener('click', () => openPuzzle(i));
+        group.querySelector('.chips').appendChild(b);
+      }
+      box.appendChild(group);
+    }
+    const solvedCount = PUZZLES.filter((p) => state.solved.has(p.id)).length;
+    $('#puzzle-progress').textContent = `${solvedCount} / ${PUZZLES.length} 問クリア`;
   }
 
   // ---------- 記録 ----------
@@ -824,6 +853,7 @@
   });
 
   // ---------- はじまり ----------
+  state.puzzleIndex = Math.max(0, PUZZLES.findIndex((p) => !state.solved.has(p.id)));
   syncSetupControls();
   const saved = load(STORE.current, null);
   if (!(saved && resumeGame(saved))) newGame();
