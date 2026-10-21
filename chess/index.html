@@ -56,6 +56,9 @@ main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:24px 16p
 header{text-align:center;margin-bottom:18px}
 h1{font-family:"Shippori Mincho B1",serif;font-weight:800;font-size:clamp(24px,6vw,34px);letter-spacing:.08em}
 header p{color:var(--ink-dim);font-size:14px}
+header .sync{font-size:12px;margin-top:2px}
+header .sync[data-status="cloud"]{color:var(--green)}
+header .sync[data-status="error"]{color:var(--danger)}
 
 .tabs{display:flex;justify-content:center;gap:6px;margin:0 auto 20px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;width:max-content;max-width:100%}
 .tabs button{border:0;background:none;color:var(--ink-dim);font:inherit;font-weight:700;font-size:14px;padding:6px 16px;border-radius:999px;cursor:pointer}
@@ -180,6 +183,7 @@ pre{white-space:pre-wrap;word-break:break-all;font-size:12px;background:var(--pa
   <header>
     <h1>はじめてのチェス</h1>
     <p>ガイドといっしょに、AI と1局。</p>
+    <p class="sync" id="sync-status" aria-live="polite"></p>
   </header>
 
   <nav class="tabs" role="tablist" aria-label="モード">
@@ -257,6 +261,7 @@ pre{white-space:pre-wrap;word-break:break-all;font-size:12px;background:var(--pa
 <script src="ai.js"></script>
 <script src="guide.js"></script>
 <script src="puzzles.js"></script>
+<script src="store.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

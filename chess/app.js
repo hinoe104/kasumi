@@ -7,13 +7,10 @@
 
   const GLYPH = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
   const LEVEL_NAME = { hiyoko: 'ひよこ', usagi: 'うさぎ', kitsune: 'きつね' };
-  const STORE = {
-    games: 'kasumi-chess-games-v1',
-    current: 'kasumi-chess-current-v1',
-    solvedLegacy: 'kasumi-chess-solved-v1', // 問題が8問だったころの「何問目」形式
-    solved: 'kasumi-chess-solved-v2', // 問題の id で保存
-    guide: 'kasumi-chess-guide-v1',
-  };
+  // 対局記録・途中の対局・解いた問題は KasumiStore（クラウド同期つき）に置く。
+  // ガイドのオン/オフのような、この端末だけの好みは localStorage に直接置く。
+  const Store = window.KasumiStore;
+  const STORE = { guide: 'kasumi-chess-guide-v1' };
 
   // localStorage はプライベートモード等で使えないことがあるので、失敗しても動くようにする
   function load(key, fallback) {
@@ -34,13 +31,6 @@
   }
 
   const $ = (sel) => document.querySelector(sel);
-
-  function loadSolved() {
-    const ids = new Set(load(STORE.solved, []));
-    const LEGACY_IDS = ['backrank', 'queen-king', 'ladder', 'smothered', 'scholar', 'arabian', 'promotion', 'backrank-black'];
-    for (const i of load(STORE.solvedLegacy, [])) if (LEGACY_IDS[i]) ids.add(LEGACY_IDS[i]);
-    return ids;
-  }
 
   const state = {
     mode: 'game', // 'game' | 'puzzle' | 'records' | 'review'
@@ -65,7 +55,7 @@
     puzzleIndex: 0, // はじまりの処理で、まだ解いていない最初の問題に合わせる
     puzzleTries: 0,
     puzzleSolved: false,
-    solved: loadSolved(),
+    solved: Store.solved(),
   };
 
   // ---------- 盤 ----------
@@ -270,7 +260,7 @@
       say('あなたは白だから先手だよ。動かしたい駒をタップしてね。<br><span class="sub">迷ったら、真ん中のポーン（e2 や d2）を2マス進めるのが定番。</span>');
       gameActions();
     }
-    persistCurrent();
+    Store.saveCurrent(null); // 前の途中の対局はここで手放す
   }
 
   function playerMove(move) {
@@ -412,8 +402,7 @@
       { label: '振り返る', primary: true, onClick: () => openReview(id) },
       { label: 'もう一局', onClick: newGame },
     ]);
-    const games = load(STORE.games, []);
-    games.unshift({
+    Store.saveGame({
       id,
       startedAt: state.startedAt,
       endedAt: new Date().toISOString(),
@@ -428,14 +417,14 @@
       hints: state.hints,
       events: state.events,
     });
-    save(STORE.games, games);
-    save(STORE.current, null);
+    Store.saveCurrent(null);
   }
 
   // 途中で閉じても続きから遊べるように
+  // 1手以上進んだ対局だけ保存する（まっさらな対局で、別の端末の途中の対局を上書きしないように）
   function persistCurrent() {
-    if (state.mode !== 'game' || state.over) return;
-    save(STORE.current, {
+    if (state.mode !== 'game' || state.over || state.chess.history().length === 0) return;
+    Store.saveCurrent({
       pgn: state.chess.pgn(),
       playerColor: state.playerColor,
       level: state.level,
@@ -529,8 +518,7 @@
     renderBoard();
     if (c.isCheckmate()) {
       state.puzzleSolved = true;
-      state.solved.add(PUZZLES[state.puzzleIndex].id);
-      save(STORE.solved, [...state.solved]);
+      Store.addSolved(PUZZLES[state.puzzleIndex].id);
       renderPuzzleList();
       const all = state.solved.size === PUZZLES.length ? `<br><b>これで全 ${PUZZLES.length} 問クリア！すごい！</b>` : '';
       say(`<b>正解！チェックメイト！</b><br>${PUZZLES[state.puzzleIndex].lesson}${all}`, 'good');
@@ -576,11 +564,11 @@
 
   // ---------- 記録 ----------
   function renderRecords() {
-    const games = load(STORE.games, []);
+    const games = Store.games();
     const box = $('#records-list');
     const wins = games.filter((g) => g.result === 'win').length;
     $('#records-summary').textContent = games.length
-      ? `${games.length} 局（${wins} 勝）。対局がたまったら、次のステップで AI に分析してもらえるようになるよ。`
+      ? `${games.length} 局（${wins} 勝）。「振り返る」で1局ずつ見直せるよ。`
       : 'まだ対局の記録はないよ。AI と1局指してみよう。';
     box.innerHTML = '';
     for (const g of games) {
@@ -624,7 +612,7 @@
   const TAG_LABEL = { blunder: '大きなミス', mistake: 'ミス', good: 'いい手', mate: 'チェックメイト', ok: '' };
 
   async function openReview(id) {
-    const game = load(STORE.games, []).find((g) => g.id === id);
+    const game = Store.games().find((g) => g.id === id);
     if (!game) return;
     state.mode = 'review';
     state.review = { game, analysis: null, sans: [], cursor: 0 };
@@ -649,12 +637,8 @@
         }
       });
       // 分析結果も記録に残す（③のクセ分析で使う）
-      const games = load(STORE.games, []);
-      const saved = games.find((g) => g.id === id);
-      if (saved) {
-        saved.analysis = analysis;
-        save(STORE.games, games);
-      }
+      const saved = Store.games().find((g) => g.id === id);
+      if (saved) Store.saveGame({ ...saved, analysis });
     }
     if (state.mode !== 'review' || state.review.game.id !== id) return; // 分析中に別の画面へ移動した
     state.review.analysis = analysis;
@@ -808,15 +792,13 @@
     tab.addEventListener('click', () => {
       const mode = tab.dataset.tab;
       if (mode === 'records') {
-        if (state.mode === 'game') persistCurrent();
         state.mode = 'records';
         showPanel('records');
         renderRecords();
       } else if (mode === 'puzzle') {
-        if (state.mode === 'game') persistCurrent();
         openPuzzle(state.puzzleIndex);
       } else {
-        const saved = load(STORE.current, null);
+        const saved = Store.current();
         if (!(saved && resumeGame(saved))) newGame();
       }
     });
@@ -852,9 +834,35 @@
     renderBoard();
   });
 
+  // ---------- 記録の同期 ----------
+  const SYNC_TEXT = {
+    local: 'この端末のブラウザに記録しています',
+    syncing: 'クラウドの記録と合わせています…',
+    cloud: '☁ 記録はあなた専用のクラウドに保存中（どの端末でも同じ記録）',
+    error: 'クラウドに保存できなかったよ。この端末には保存してあるので、ページを開き直すともう一度試すね',
+  };
+  function renderSyncStatus() {
+    const el = $('#sync-status');
+    el.textContent = SYNC_TEXT[Store.status];
+    el.dataset.status = Store.status;
+  }
+  Store.onChange((what) => {
+    if (what === 'status') renderSyncStatus();
+    if (what === 'data') {
+      if (state.mode === 'records') renderRecords();
+      if (state.mode === 'puzzle') renderPuzzleList();
+    }
+    // 別の端末で途中だった対局があれば、まだ1手も指していないときだけ続きを開く
+    if (what === 'current' && state.mode === 'game' && !state.thinking && state.chess.history().length === 0) {
+      resumeGame(Store.current());
+    }
+  });
+
   // ---------- はじまり ----------
   state.puzzleIndex = Math.max(0, PUZZLES.findIndex((p) => !state.solved.has(p.id)));
   syncSetupControls();
-  const saved = load(STORE.current, null);
+  renderSyncStatus();
+  const saved = Store.current();
   if (!(saved && resumeGame(saved))) newGame();
+  Store.connect();
 })();
